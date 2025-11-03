@@ -10,17 +10,21 @@
 #include <memory>
 
 // Forward declarations
-extern "C" {
-typedef struct Vm Vm;
+extern "C"
+{
+  typedef struct Vm Vm;
 }
 
-namespace v4 {
-namespace link {
+namespace v4
+{
+namespace link
+{
 class Link;
 }
 }  // namespace v4
 
-namespace v4rtos {
+namespace v4rtos
+{
 
 /**
  * @brief V4-link port for ESP32-C6 USB Serial/JTAG
@@ -28,7 +32,8 @@ namespace v4rtos {
  * Wraps V4-link protocol implementation and handles USB Serial/JTAG I/O.
  * Non-blocking design suitable for polling from main loop.
  */
-class Esp32c6LinkPort {
+class Esp32c6LinkPort
+{
  public:
   /**
    * @brief Construct V4-link port
@@ -62,7 +67,7 @@ class Esp32c6LinkPort {
   size_t buffer_capacity() const;
 
  private:
-  std::unique_ptr<v4::link::Link> link_;  ///< V4-link instance
+  std::unique_ptr<v4::link::Link> link_;        ///< V4-link instance
   static constexpr size_t USB_BUF_SIZE = 1024;  ///< USB driver buffer size
 };
 

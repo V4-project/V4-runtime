@@ -105,6 +105,10 @@ jobs:
       working-directory: bsp/esp32c6/runtime
       run: git clone --depth 1 https://github.com/V4-project/V4-hal.git _deps/V4-hal
 
+    - name: Clone V4-link dependency into runtime
+      working-directory: bsp/esp32c6/runtime
+      run: git clone --depth 1 https://github.com/V4-project/V4-link.git _deps/V4-link
+
     - name: Build with ESP-IDF
       uses: espressif/esp-idf-ci-action@v1
       with:

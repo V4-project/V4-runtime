@@ -18,7 +18,8 @@
 #include <cstring>
 
 // Board definitions
-extern "C" {
+extern "C"
+{
 #include "nanoc6/board.h"
 #include "nanoc6/peripherals.h"
 }
@@ -80,7 +81,8 @@ static v4rtos::Esp32c6LinkPort* g_link = nullptr;
  *
  * @return 0 on success, negative error code on failure
  */
-static int v4_init(void) {
+static int v4_init(void)
+{
   // Configure VM with static arena
   VmConfig config = {
       .mem = vm_arena,
@@ -92,7 +94,8 @@ static int v4_init(void) {
 
   // Create VM instance
   g_vm = vm_create(&config);
-  if (g_vm == nullptr) {
+  if (g_vm == nullptr)
+  {
     ESP_LOGE(TAG, "Failed to create VM instance");
     return -1;
   }
@@ -101,7 +104,8 @@ static int v4_init(void) {
 
   // Initialize task system with 10ms time slice
   v4_err err = vm_task_init(g_vm, 10);
-  if (err != 0) {
+  if (err != 0)
+  {
     ESP_LOGE(TAG, "Failed to initialize task system: %d", err);
     return -2;
   }
@@ -123,12 +127,15 @@ static int v4_init(void) {
  * - Button (GPIO9) with pullup
  * - RGB LED (GPIO8) for future use
  */
-static void board_init_runtime(void) {
+static void board_init_runtime(void)
+{
   esp_err_t ret = board_peripherals_init();
-  if (ret != ESP_OK) {
+  if (ret != ESP_OK)
+  {
     ESP_LOGE(TAG, "Failed to initialize board peripherals: %d", ret);
     ESP_LOGE(TAG, "System halted.");
-    while (1) {
+    while (1)
+    {
       vTaskDelay(pdMS_TO_TICKS(1000));
     }
   }
@@ -155,16 +162,19 @@ static void board_init_runtime(void) {
  * 4. V4-link protocol initialization
  * 5. Main loop polling for V4-link bytecode
  */
-extern "C" void app_main(void) {
+extern "C" void app_main(void)
+{
   ESP_LOGI(TAG, "=== V4 RTOS Runtime ===");
   ESP_LOGI(TAG, "Version: 1.0.0-dev");
 
   // Step 1: Initialize HAL
   int hal_status = hal_init();
-  if (hal_status != 0) {
+  if (hal_status != 0)
+  {
     ESP_LOGE(TAG, "HAL initialization failed: %d", hal_status);
     ESP_LOGE(TAG, "System halted.");
-    while (1) {
+    while (1)
+    {
       vTaskDelay(pdMS_TO_TICKS(1000));
     }
   }
@@ -174,20 +184,24 @@ extern "C" void app_main(void) {
   board_init_runtime();
 
   // Step 3: Initialize V4 VM and task system
-  if (v4_init() != 0) {
+  if (v4_init() != 0)
+  {
     ESP_LOGE(TAG, "V4 initialization failed");
     ESP_LOGE(TAG, "System halted.");
-    while (1) {
+    while (1)
+    {
       vTaskDelay(pdMS_TO_TICKS(1000));
     }
   }
 
   // Step 4: Initialize V4-link protocol
   g_link = new v4rtos::Esp32c6LinkPort(g_vm, 512);
-  if (g_link == nullptr) {
+  if (g_link == nullptr)
+  {
     ESP_LOGE(TAG, "V4-link initialization failed");
     ESP_LOGE(TAG, "System halted.");
-    while (1) {
+    while (1)
+    {
       vTaskDelay(pdMS_TO_TICKS(1000));
     }
   }
@@ -205,7 +219,8 @@ extern "C" void app_main(void) {
   board_led_off();
 
   // Main loop: poll for V4-link bytecode
-  while (1) {
+  while (1)
+  {
     g_link->poll();
     vTaskDelay(pdMS_TO_TICKS(1));  // 1ms polling interval
   }

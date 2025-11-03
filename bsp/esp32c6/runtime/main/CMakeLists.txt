@@ -8,9 +8,9 @@
 # V4 Kernel Integration
 # ==============================================================================
 
-# Try multiple possible locations for V4, V4-hal, and V4-link 1. Docker: /v4 and
-# /v4-hal (docker-compose volume mounts) 2. CI: runtime/_deps/V4 (GitHub Actions) 3.
-# Local: ../../../../V4 (parent directories)
+# Try multiple possible locations for V4, V4-hal, and V4-link 1. Docker: /v4 and /v4-hal
+# (docker-compose volume mounts) 2. CI: runtime/_deps/V4 (GitHub Actions) 3. Local:
+# ../../../../V4 (parent directories)
 
 set(V4_DIR_DOCKER "/v4")
 set(V4_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4")
@@ -72,8 +72,7 @@ else()
   message(
     FATAL_ERROR
       "V4-link not found. Please clone V4-link repository to:\n"
-      "  - ${V4LINK_DIR_DOCKER} (Docker build)\n"
-      "  - ${V4LINK_DIR_CI} (CI build)\n"
+      "  - ${V4LINK_DIR_DOCKER} (Docker build)\n" "  - ${V4LINK_DIR_CI} (CI build)\n"
       "  - ${V4LINK_DIR_LOCAL} (local build)")
 endif()
 
@@ -99,11 +98,8 @@ set(V4HAL_SRCS
     "${V4HAL_DIR}/ports/esp32/platform_esp32.cpp")
 
 # V4-link source files
-set(V4LINK_SRCS
-    "${V4LINK_DIR}/src/link.cpp"
-    "${V4LINK_DIR}/src/link_c_api.cpp"
-    "${V4LINK_DIR}/src/frame.cpp"
-    "${V4LINK_DIR}/src/crc8.cpp")
+set(V4LINK_SRCS "${V4LINK_DIR}/src/link.cpp" "${V4LINK_DIR}/src/link_c_api.cpp"
+                "${V4LINK_DIR}/src/frame.cpp" "${V4LINK_DIR}/src/crc8.cpp")
 
 # ==============================================================================
 # Component Registration
