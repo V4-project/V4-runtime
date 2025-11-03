@@ -238,24 +238,13 @@ extern "C" void app_main(void)
     vTaskDelay(pdMS_TO_TICKS(100));
   }
 
-  ESP_LOGI(TAG, "Starting main loop with heartbeat LED...");
+  ESP_LOGI(TAG, "Starting main loop (polling for V4-link bytecode)...");
 
-  // Main loop: poll for V4-link bytecode with heartbeat LED
-  uint32_t heartbeat_counter = 0;
-  const uint32_t HEARTBEAT_INTERVAL_MS = 1000;  // 1 second heartbeat
-
+  // Main loop: poll for V4-link bytecode
+  // Note: Heartbeat LED disabled to allow bytecode control of GPIO7
   while (1)
   {
     g_link->poll();
-
-    // Heartbeat: blink LED every second to show system is alive
-    heartbeat_counter++;
-    if (heartbeat_counter >= HEARTBEAT_INTERVAL_MS)
-    {
-      board_led_toggle();
-      heartbeat_counter = 0;
-    }
-
     vTaskDelay(pdMS_TO_TICKS(1));  // 1ms polling interval
   }
 }

@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Thin C++ wrapper (vm_wrapper.cpp) replaces standalone kernel implementation
 - CMake configuration simplified to use V4 VM library with FetchContent support
 - CI workflows consolidated from 4 separate workflows to 1 unified workflow
+- ESP32-C6 runtime: Disabled heartbeat LED to allow full bytecode control of GPIO7
 
 ### Removed
 - kernel/src/scheduler.c (167 lines) - now uses V4's scheduler.cpp
