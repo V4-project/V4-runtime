@@ -1,0 +1,108 @@
+#
+# V4 RTOS Runtime - ESP32-C6 Default Configuration
+#
+# This file provides minimal default ESP-IDF configuration for V4 RTOS runtime.
+# These settings are automatically applied when building the runtime project.
+#
+# To customize settings:
+#   1. Run 'idf.py menuconfig' to modify configuration interactively
+#   2. Or copy board-specific sdkconfig from ../boards/nanoc6/sdkconfig
+#
+
+# ==============================================================================
+# Target Selection
+# ==============================================================================
+
+CONFIG_IDF_TARGET="esp32c6"
+
+# ==============================================================================
+# Flash Configuration
+# ==============================================================================
+
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+
+# ==============================================================================
+# Console
+# ==============================================================================
+
+# Use USB Serial/JTAG for console (built-in on ESP32-C6)
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+
+# ==============================================================================
+# FreeRTOS
+# ==============================================================================
+
+# 1000 Hz tick for better V4 scheduler responsiveness
+CONFIG_FREERTOS_HZ=1000
+
+# Adequate main task stack for V4 VM initialization
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+
+# ==============================================================================
+# Memory
+# ==============================================================================
+
+# Stack overflow checking (recommended for development)
+CONFIG_FREERTOS_CHECK_STACKOVERFLOW_CANARY=y
+
+# Use RTC fast memory for heap
+CONFIG_ESP_SYSTEM_ALLOW_RTC_FAST_MEM_AS_HEAP=y
+
+# ==============================================================================
+# Logging
+# ==============================================================================
+
+# Info-level logging (change to DEBUG for verbose output)
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_LOG_DEFAULT_LEVEL=3
+
+# RTOS timestamps for logs
+CONFIG_LOG_TIMESTAMP_SOURCE_RTOS=y
+
+# ==============================================================================
+# Optimization
+# ==============================================================================
+
+# Optimize for size to leave more RAM for V4 VM
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+
+# ==============================================================================
+# Watchdog
+# ==============================================================================
+
+# Enable task watchdog with 10-second timeout
+CONFIG_ESP_TASK_WDT_EN=y
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=10
+
+# ==============================================================================
+# Peripherals (Minimal - disable unused features)
+# ==============================================================================
+
+# Disable Wi-Fi (not needed for basic RTOS)
+CONFIG_ESP_WIFI_ENABLED=n
+
+# Disable Bluetooth (not needed for basic RTOS)
+CONFIG_BT_ENABLED=n
+
+# Disable power management for deterministic timing
+CONFIG_PM_ENABLE=n
+
+# ==============================================================================
+# Bootloader
+# ==============================================================================
+
+CONFIG_BOOTLOADER_LOG_LEVEL_INFO=y
+
+# ==============================================================================
+# Security (Disabled for development)
+# ==============================================================================
+
+CONFIG_SECURE_BOOT=n
+CONFIG_SECURE_FLASH_ENC_ENABLED=n
+
+# ==============================================================================
+# V4 RTOS Specific
+# ==============================================================================
+
+# C++17 support is handled by CMakeLists.txt
+# V4 VM arena size is configured in main.c (default: 16KB)
