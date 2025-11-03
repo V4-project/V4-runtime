@@ -60,7 +60,6 @@ set(V4HAL_SRCS
     "${V4HAL_DIR}/src/bridge/hal_uart_bridge.cpp"
     "${V4HAL_DIR}/src/bridge/hal_timer_bridge.cpp"
     "${V4HAL_DIR}/src/bridge/hal_console_bridge.cpp"
-    "${V4HAL_DIR}/src/bridge/hal_critical_bridge.cpp"
     "${V4HAL_DIR}/ports/esp32/platform_esp32.cpp")
 
 # ==============================================================================
@@ -82,6 +81,7 @@ idf_component_register(
   driver
   freertos
   esp_system
+  esp_timer
   log)
 
 # ==============================================================================
