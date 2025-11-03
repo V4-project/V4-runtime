@@ -50,4 +50,7 @@ if(V4_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-# Tests - will be implemented later if(V4_BUILD_TESTS) enable_testing() endif()
+# Tests
+if(V4_BUILD_TESTS)
+  enable_testing()
+endif()
