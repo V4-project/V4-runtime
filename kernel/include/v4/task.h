@@ -6,22 +6,22 @@ extern "C"
 {
 #endif
 
-  /**
-   * @file task.h
-   * @brief V4 RTOS Task Management API
-   */
+/**
+ * @file task.h
+ * @brief V4 RTOS Task Management API
+ */
 
-  /* Task configuration */
-  #define V4_MAX_TASKS 8
-  #define V4_MSG_QUEUE_SIZE 16
+/* Task configuration */
+#define V4_MAX_TASKS 8
+#define V4_MSG_QUEUE_SIZE 16
 
   /* Task states */
   typedef enum
   {
-    V4_TASK_STATE_DEAD = 0,     /* Not initialized */
-    V4_TASK_STATE_READY = 1,    /* Ready to run */
-    V4_TASK_STATE_RUNNING = 2,  /* Currently executing */
-    V4_TASK_STATE_BLOCKED = 3,  /* Sleeping or waiting */
+    V4_TASK_STATE_DEAD = 0,    /* Not initialized */
+    V4_TASK_STATE_READY = 1,   /* Ready to run */
+    V4_TASK_STATE_RUNNING = 2, /* Currently executing */
+    V4_TASK_STATE_BLOCKED = 3, /* Sleeping or waiting */
   } v4_task_state_t;
 
   /**
@@ -30,21 +30,21 @@ extern "C"
   typedef struct
   {
     /* Execution context */
-    uint16_t word_idx;         /* Word index to execute */
-    uint16_t pc;               /* Program counter (bytecode offset) */
-    v4_i32 *ds_base;           /* Data stack base */
-    v4_i32 *rs_base;           /* Return stack base */
-    uint8_t ds_depth;          /* Data stack depth */
-    uint8_t rs_depth;          /* Return stack depth */
+    uint16_t word_idx; /* Word index to execute */
+    uint16_t pc;       /* Program counter (bytecode offset) */
+    v4_i32 *ds_base;   /* Data stack base */
+    v4_i32 *rs_base;   /* Return stack base */
+    uint8_t ds_depth;  /* Data stack depth */
+    uint8_t rs_depth;  /* Return stack depth */
 
     /* Task state */
-    uint8_t state;             /* v4_task_state_t */
-    uint8_t priority;          /* 0=lowest, 255=highest */
-    v4_u32 sleep_until_tick;   /* Wake-up time (tick) */
+    uint8_t state;           /* v4_task_state_t */
+    uint8_t priority;        /* 0=lowest, 255=highest */
+    v4_u32 sleep_until_tick; /* Wake-up time (tick) */
 
     /* Stack configuration */
-    uint8_t ds_size;           /* DS capacity */
-    uint8_t rs_size;           /* RS capacity */
+    uint8_t ds_size; /* DS capacity */
+    uint8_t rs_size; /* RS capacity */
 
     /* Statistics */
     uint16_t exec_count;

@@ -1,6 +1,6 @@
-#include "v4/internal/vm_internal.h"
-
 #include <time.h>
+
+#include "v4/internal/vm_internal.h"
 
 /**
  * @file platform_stub.c

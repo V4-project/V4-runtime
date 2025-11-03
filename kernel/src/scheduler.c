@@ -1,6 +1,6 @@
-#include "v4/internal/vm_internal.h"
-
 #include <string.h>
+
+#include "v4/internal/vm_internal.h"
 
 void v4_scheduler_init(v4_scheduler_t *sched)
 {

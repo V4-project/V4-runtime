@@ -1,8 +1,8 @@
-#include "v4/internal/vm_internal.h"
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "v4/internal/vm_internal.h"
 
 /* Little-endian readers */
 static inline v4_i32 read_i32_le(const v4_u8 *p)

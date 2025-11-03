@@ -15,9 +15,9 @@ extern "C"
    * Not part of the public API.
    */
 
-  #define V4_MAX_WORDS 256
-  #define V4_DS_SIZE 256
-  #define V4_RS_SIZE 64
+#define V4_MAX_WORDS 256
+#define V4_DS_SIZE 256
+#define V4_RS_SIZE 64
 
   /**
    * @brief Word entry
@@ -37,9 +37,9 @@ extern "C"
     /* Stacks */
     v4_i32 DS[V4_DS_SIZE];
     v4_i32 RS[V4_RS_SIZE];
-    v4_i32 *sp;  /* Data stack pointer */
-    v4_i32 *rp;  /* Return stack pointer */
-    v4_i32 *fp;  /* Frame pointer (locals) */
+    v4_i32 *sp; /* Data stack pointer */
+    v4_i32 *rp; /* Return stack pointer */
+    v4_i32 *fp; /* Frame pointer (locals) */
 
     /* Memory */
     v4_u8 *mem;
@@ -68,8 +68,8 @@ extern "C"
   void v4_scheduler_init(v4_scheduler_t *sched);
   v4_err v4_schedule(v4_vm_t *vm);
   uint8_t v4_task_select_next(v4_vm_t *vm);
-  v4_err v4_task_spawn(v4_vm_t *vm, uint16_t word_idx, uint8_t priority,
-                       uint8_t ds_size, uint8_t rs_size);
+  v4_err v4_task_spawn(v4_vm_t *vm, uint16_t word_idx, uint8_t priority, uint8_t ds_size,
+                       uint8_t rs_size);
   v4_err v4_task_yield(v4_vm_t *vm);
   v4_err v4_task_sleep(v4_vm_t *vm, v4_u32 ms);
   v4_err v4_task_exit(v4_vm_t *vm);
@@ -78,10 +78,9 @@ extern "C"
 
   /* Message queue interface */
   void v4_msg_queue_init(v4_msg_queue_t *q);
-  v4_err v4_msg_send(v4_vm_t *vm, uint8_t dst_task, uint8_t msg_type,
-                     v4_i32 data);
-  v4_err v4_msg_receive(v4_vm_t *vm, uint8_t msg_type, v4_i32 *data,
-                        uint8_t *src_task, int blocking, v4_u32 timeout_ms);
+  v4_err v4_msg_send(v4_vm_t *vm, uint8_t dst_task, uint8_t msg_type, v4_i32 data);
+  v4_err v4_msg_receive(v4_vm_t *vm, uint8_t msg_type, v4_i32 *data, uint8_t *src_task,
+                        int blocking, v4_u32 timeout_ms);
 
   /* Platform time interface (must be provided by BSP) */
   v4_u32 v4_platform_get_tick_ms(void);

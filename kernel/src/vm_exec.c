@@ -1,6 +1,6 @@
-#include "v4/internal/vm_internal.h"
-
 #include <stdint.h>
+
+#include "v4/internal/vm_internal.h"
 
 /* Forward declarations for helpers from vm.c */
 extern v4_err v4_ds_push_internal(v4_vm_t *vm, v4_i32 val);

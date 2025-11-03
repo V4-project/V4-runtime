@@ -1,6 +1,6 @@
-#include "v4/internal/vm_internal.h"
-
 #include <string.h>
+
+#include "v4/internal/vm_internal.h"
 
 void v4_msg_queue_init(v4_msg_queue_t *q)
 {
@@ -41,8 +41,8 @@ v4_err v4_msg_send(v4_vm_t *vm, uint8_t dst_task, uint8_t msg_type, v4_i32 data)
   return V4_OK;
 }
 
-v4_err v4_msg_receive(v4_vm_t *vm, uint8_t msg_type, v4_i32 *data,
-                      uint8_t *src_task, int blocking, v4_u32 timeout_ms)
+v4_err v4_msg_receive(v4_vm_t *vm, uint8_t msg_type, v4_i32 *data, uint8_t *src_task,
+                      int blocking, v4_u32 timeout_ms)
 {
   if (!vm)
     return V4_ERR_INVALID_ARG;

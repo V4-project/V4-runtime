@@ -1,10 +1,10 @@
-#include "v4/internal/vm_internal.h"
-
 #include <stdlib.h>
 #include <string.h>
 
-v4_err v4_task_spawn(v4_vm_t *vm, uint16_t word_idx, uint8_t priority,
-                     uint8_t ds_size, uint8_t rs_size)
+#include "v4/internal/vm_internal.h"
+
+v4_err v4_task_spawn(v4_vm_t *vm, uint16_t word_idx, uint8_t priority, uint8_t ds_size,
+                     uint8_t rs_size)
 {
   if (!vm)
     return V4_ERR_INVALID_ARG;

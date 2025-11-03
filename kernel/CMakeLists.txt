@@ -56,10 +56,8 @@ else()
     message(
       FATAL_ERROR
         "V4 dependency not specified and not found in sibling directory.\n"
-        "Use one of:\n"
-        "  -DV4_SRC_DIR=/path/to/V4\n"
-        "  -DV4_INCLUDE_DIR=/path/to/V4/include\n"
-        "  -DV4_FETCH=ON")
+        "Use one of:\n" "  -DV4_SRC_DIR=/path/to/V4\n"
+        "  -DV4_INCLUDE_DIR=/path/to/V4/include\n" "  -DV4_FETCH=ON")
   endif()
 endif()
 
@@ -71,25 +69,12 @@ target_include_directories(v4headers INTERFACE "${_V4_INC_SRC}")
 # ------------------------------------------------------------
 # Kernel Library
 # ------------------------------------------------------------
-add_library(v4_kernel STATIC
-  src/vm.c
-  src/vm_exec.c
-  src/scheduler.c
-  src/message.c
-  src/task.c
-  src/platform_stub.c
-)
+add_library(v4_kernel STATIC src/vm.c src/vm_exec.c src/scheduler.c src/message.c
+                             src/task.c src/platform_stub.c)
 
-target_include_directories(v4_kernel PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
+target_include_directories(v4_kernel PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(v4_kernel PUBLIC v4headers)
 
-target_compile_options(v4_kernel PRIVATE
-  -Wall
-  -Wextra
-  -Werror
-  $<$<CONFIG:Debug>:-g -O0>
-  $<$<CONFIG:Release>:-O2>
-)
+target_compile_options(v4_kernel PRIVATE -Wall -Wextra -Werror $<$<CONFIG:Debug>:-g -O0>
+                                         $<$<CONFIG:Release>:-O2>)

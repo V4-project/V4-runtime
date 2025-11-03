@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
-project(V4-rtos VERSION 1.0.0 LANGUAGES C CXX)
+project(
+  V4-rtos
+  VERSION 1.0.0
+  LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -28,10 +31,7 @@ if(V4_BUILD_KERNEL)
   add_subdirectory(kernel)
 endif()
 
-# HAL will be implemented later
-# if(V4_BUILD_HAL)
-#   add_subdirectory(hal)
-# endif()
+# HAL will be implemented later if(V4_BUILD_HAL) add_subdirectory(hal) endif()
 
 if(V4_BUILD_COMPILER)
   add_subdirectory(compiler)
@@ -50,7 +50,4 @@ if(V4_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-# Tests - will be implemented later
-# if(V4_BUILD_TESTS)
-#   enable_testing()
-# endif()
+# Tests - will be implemented later if(V4_BUILD_TESTS) enable_testing() endif()

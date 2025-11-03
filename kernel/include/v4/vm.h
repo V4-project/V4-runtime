@@ -1,8 +1,9 @@
 #pragma once
-#include "v4/task.h"
-#include "v4/types.h"
 #include <v4/opcodes.h>
 #include <v4/sys_ids.h>
+
+#include "v4/task.h"
+#include "v4/types.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -25,8 +26,8 @@ extern "C"
    */
   typedef struct
   {
-    v4_u8 *mem;       /* RAM base pointer */
-    v4_u32 mem_size;  /* RAM size in bytes */
+    v4_u8 *mem;      /* RAM base pointer */
+    v4_u32 mem_size; /* RAM size in bytes */
   } v4_vm_config_t;
 
   /**
