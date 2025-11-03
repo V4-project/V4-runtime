@@ -97,11 +97,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Clone V4 dependency
-      run: git clone --depth 1 https://github.com/V4-project/V4.git ../V4
+    - name: Clone V4 dependency into runtime
+      working-directory: bsp/esp32c6/runtime
+      run: git clone --depth 1 https://github.com/V4-project/V4.git _deps/V4
 
-    - name: Clone V4-hal dependency
-      run: git clone --depth 1 https://github.com/V4-project/V4-hal.git ../V4-hal
+    - name: Clone V4-hal dependency into runtime
+      working-directory: bsp/esp32c6/runtime
+      run: git clone --depth 1 https://github.com/V4-project/V4-hal.git _deps/V4-hal
 
     - name: Build with ESP-IDF
       uses: espressif/esp-idf-ci-action@v1
