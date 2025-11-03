@@ -1,4 +1,4 @@
-.PHONY: all build release test clean format format-check asan ubsan esp32c6 help
+.PHONY: all build release test clean format format-check asan ubsan esp32c6 size help
 
 # Default target
 all: build test
@@ -16,6 +16,7 @@ help:
 	@echo "  asan          - Build and test with AddressSanitizer"
 	@echo "  ubsan         - Build and test with UndefinedBehaviorSanitizer"
 	@echo "  esp32c6       - Build ESP32-C6 runtime"
+	@echo "  size          - Show firmware sizes for all BSPs"
 	@echo ""
 
 # Build (default: debug, override with CMAKE_BUILD_TYPE=Release)
@@ -100,3 +101,33 @@ esp32c6:
 	@echo ""
 	@echo "To flash:"
 	@echo "  cd bsp/esp32c6/runtime && idf.py flash monitor"
+
+# Show firmware sizes for all BSPs
+size:
+	@echo "📦 Firmware Size Report"
+	@echo "======================="
+	@echo ""
+	@echo "=== ESP32-C6 (M5Stack NanoC6) ==="
+	@if [ -f bsp/esp32c6/runtime/build/v4-runtime.elf ]; then \
+		echo ""; \
+		echo "Memory usage:"; \
+		riscv32-esp-elf-size bsp/esp32c6/runtime/build/v4-runtime.elf 2>/dev/null || \
+		$$IDF_PATH/tools/riscv32-esp-elf/*/riscv32-esp-elf/bin/riscv32-esp-elf-size bsp/esp32c6/runtime/build/v4-runtime.elf 2>/dev/null || \
+		echo "  ⚠️  riscv32-esp-elf-size not found in PATH"; \
+		echo ""; \
+		echo "Firmware binaries:"; \
+		for bin in bsp/esp32c6/runtime/build/*.bin; do \
+			if [ -f "$$bin" ]; then \
+				printf "  %-30s %s\n" "$$(basename $$bin):" "$$(ls -lh $$bin | awk '{print $$5}')"; \
+			fi \
+		done; \
+		echo ""; \
+		echo "Partition table:"; \
+		cat bsp/esp32c6/runtime/build/partition_table/partition-table.csv 2>/dev/null | \
+			awk 'NR==1 || /^[^#]/ {printf "  %s\n", $$0}' || echo "  ⚠️  Partition table not found"; \
+	else \
+		echo "  ⚠️  Build not found. Run 'make esp32c6' first."; \
+	fi
+	@echo ""
+	@echo "To build before checking size:"
+	@echo "  make esp32c6"
