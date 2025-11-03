@@ -26,13 +26,17 @@ V4 RTOS is a lightweight, preemptive real-time operating system for resource-con
 ## Quick Start (10 minutes)
 
 ```bash
-# Clone repository
+# 1. Clone repository
 git clone https://github.com/V4-project/V4-rtos.git
 cd V4-rtos
 
-# Build for ESP32-C6 NanoC6
-cd bsp/esp32c6/examples/nanoc6/hello-rtos
+# 2. Flash V4 runtime to ESP32-C6
+cd bsp/esp32c6/runtime
 idf.py build flash monitor
+
+# 3. Compile and send Forth program (when v4_cli is ready)
+v4c tools/examples/hello.fth -o hello.bin
+v4flash -p /dev/ttyUSB0 hello.bin
 ```
 
 See [Getting Started Guide](docs/getting-started.md) for detailed instructions.
