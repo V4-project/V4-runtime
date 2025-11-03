@@ -42,8 +42,14 @@ else()
 endif()
 
 # V4 source files (minimal set for runtime)
-set(V4_SRCS "${V4_DIR}/src/vm.cpp" "${V4_DIR}/src/dict.cpp" "${V4_DIR}/src/compiler.cpp"
-            "${V4_DIR}/src/task.cpp" "${V4_DIR}/src/arena.cpp")
+set(V4_SRCS
+    "${V4_DIR}/src/core.cpp"
+    "${V4_DIR}/src/arena.cpp"
+    "${V4_DIR}/src/hal_wrapper.cpp"
+    "${V4_DIR}/src/memory.cpp"
+    "${V4_DIR}/src/message.cpp"
+    "${V4_DIR}/src/scheduler.cpp"
+    "${V4_DIR}/src/task.cpp")
 
 # V4-hal source files (C bridge + ESP32 platform)
 set(V4HAL_SRCS
@@ -54,6 +60,7 @@ set(V4HAL_SRCS
     "${V4HAL_DIR}/src/bridge/hal_uart_bridge.cpp"
     "${V4HAL_DIR}/src/bridge/hal_timer_bridge.cpp"
     "${V4HAL_DIR}/src/bridge/hal_console_bridge.cpp"
+    "${V4HAL_DIR}/src/bridge/hal_critical_bridge.cpp"
     "${V4HAL_DIR}/ports/esp32/platform_esp32.cpp")
 
 # ==============================================================================
