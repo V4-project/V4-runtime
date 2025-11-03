@@ -153,16 +153,18 @@ static int v4_link_receive(void)
  * - LED (GPIO7) for status indication
  * - Button (GPIO9) with pullup
  * - RGB LED (GPIO8) for future use
- *
- * @return 0 on success, negative on error
  */
-static int board_init(void)
+static void board_init_runtime(void)
 {
   esp_err_t ret = board_peripherals_init();
   if (ret != ESP_OK)
   {
     ESP_LOGE(TAG, "Failed to initialize board peripherals: %d", ret);
-    return -1;
+    ESP_LOGE(TAG, "System halted.");
+    while (1)
+    {
+      vTaskDelay(pdMS_TO_TICKS(1000));
+    }
   }
 
   // LED on to indicate runtime is starting
@@ -171,8 +173,6 @@ static int board_init(void)
   ESP_LOGI(TAG, "Board: %s", BOARD_NAME);
   ESP_LOGI(TAG, "MCU: %s @ %d MHz", BOARD_MCU, CPU_FREQ_MHZ);
   ESP_LOGI(TAG, "RAM: %d KB, Flash: %d KB", SRAM_SIZE_KB, FLASH_SIZE_KB);
-
-  return 0;
 }
 
 // ==============================================================================
@@ -207,15 +207,7 @@ void app_main(void)
   ESP_LOGI(TAG, "HAL initialized");
 
   // Step 2: Initialize board peripherals
-  if (board_init() != 0)
-  {
-    ESP_LOGE(TAG, "Board initialization failed");
-    ESP_LOGE(TAG, "System halted.");
-    while (1)
-    {
-      vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-  }
+  board_init_runtime();
 
   // Step 3: Initialize V4 VM and task system
   if (v4_init() != 0)
