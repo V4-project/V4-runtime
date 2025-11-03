@@ -100,11 +100,11 @@ ifeq ($(DOCKER),1)
 		echo "❌ Docker not found. Please install Docker first."; \
 		exit 1; \
 	fi
-	@docker compose run --rm esp-idf idf.py build
+	@docker compose run --rm esp-idf bash -c "git config --global --add safe.directory /project && idf.py build"
 	@echo "✅ ESP32-C6 runtime build complete!"
 	@echo ""
 	@echo "To flash (Docker):"
-	@echo "  docker compose run --rm esp-idf idf.py flash monitor"
+	@echo "  docker compose run --rm esp-idf bash -c 'git config --global --add safe.directory /project && idf.py flash monitor'"
 else
 	@echo "📱 Building ESP32-C6 runtime (native)..."
 	@if [ -z "$$IDF_PATH" ]; then \

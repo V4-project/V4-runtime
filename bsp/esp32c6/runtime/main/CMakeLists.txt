@@ -8,28 +8,40 @@
 # V4 Kernel Integration
 # ==============================================================================
 
-# Try multiple possible locations for V4 and V4-hal 1. CI: runtime/_deps/V4 (for Docker
-# volume mount) 2. Local: ../../../../V4 (parent directories)
+# Try multiple possible locations for V4 and V4-hal 1. Docker: /v4 and /v4-hal
+# (docker-compose volume mounts) 2. CI: runtime/_deps/V4 (GitHub Actions) 3. Local:
+# ../../../../V4 (parent directories)
 
+set(V4_DIR_DOCKER "/v4")
 set(V4_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4")
 set(V4_DIR_LOCAL "${CMAKE_CURRENT_SOURCE_DIR}/../../../../V4")
+set(V4HAL_DIR_DOCKER "/v4-hal")
 set(V4HAL_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4-hal")
 set(V4HAL_DIR_LOCAL "${CMAKE_CURRENT_SOURCE_DIR}/../../../../V4-hal")
 
 # Check V4 location
-if(EXISTS "${V4_DIR_CI}/include/v4/vm_api.h")
+if(EXISTS "${V4_DIR_DOCKER}/include/v4/vm_api.h")
+  set(V4_DIR "${V4_DIR_DOCKER}")
+  message(STATUS "Found V4 at ${V4_DIR} (Docker location)")
+elseif(EXISTS "${V4_DIR_CI}/include/v4/vm_api.h")
   set(V4_DIR "${V4_DIR_CI}")
   message(STATUS "Found V4 at ${V4_DIR} (CI location)")
 elseif(EXISTS "${V4_DIR_LOCAL}/include/v4/vm_api.h")
   set(V4_DIR "${V4_DIR_LOCAL}")
   message(STATUS "Found V4 at ${V4_DIR} (local location)")
 else()
-  message(FATAL_ERROR "V4 not found. Please clone V4 repository to:\n"
-                      "  - ${V4_DIR_CI} (CI build)\n" "  - ${V4_DIR_LOCAL} (local build)")
+  message(
+    FATAL_ERROR
+      "V4 not found. Please clone V4 repository to:\n"
+      "  - ${V4_DIR_DOCKER} (Docker build)\n" "  - ${V4_DIR_CI} (CI build)\n"
+      "  - ${V4_DIR_LOCAL} (local build)")
 endif()
 
 # Check V4-hal location
-if(EXISTS "${V4HAL_DIR_CI}/include/v4/hal.h")
+if(EXISTS "${V4HAL_DIR_DOCKER}/include/v4/hal.h")
+  set(V4HAL_DIR "${V4HAL_DIR_DOCKER}")
+  message(STATUS "Found V4-hal at ${V4HAL_DIR} (Docker location)")
+elseif(EXISTS "${V4HAL_DIR_CI}/include/v4/hal.h")
   set(V4HAL_DIR "${V4HAL_DIR_CI}")
   message(STATUS "Found V4-hal at ${V4HAL_DIR} (CI location)")
 elseif(EXISTS "${V4HAL_DIR_LOCAL}/include/v4/hal.h")
@@ -37,8 +49,10 @@ elseif(EXISTS "${V4HAL_DIR_LOCAL}/include/v4/hal.h")
   message(STATUS "Found V4-hal at ${V4HAL_DIR} (local location)")
 else()
   message(
-    FATAL_ERROR "V4-hal not found. Please clone V4-hal repository to:\n"
-                "  - ${V4HAL_DIR_CI} (CI build)\n" "  - ${V4HAL_DIR_LOCAL} (local build)")
+    FATAL_ERROR
+      "V4-hal not found. Please clone V4-hal repository to:\n"
+      "  - ${V4HAL_DIR_DOCKER} (Docker build)\n" "  - ${V4HAL_DIR_CI} (CI build)\n"
+      "  - ${V4HAL_DIR_LOCAL} (local build)")
 endif()
 
 # V4 source files (minimal set for runtime)
