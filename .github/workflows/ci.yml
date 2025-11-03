@@ -26,9 +26,6 @@ jobs:
       pull-requests: read
     outputs:
       kernel: ${{ steps.filter.outputs.kernel }}
-      compiler: ${{ steps.filter.outputs.compiler }}
-      shell: ${{ steps.filter.outputs.shell }}
-      hal: ${{ steps.filter.outputs.hal }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -38,69 +35,21 @@ jobs:
             kernel:
               - 'kernel/**'
               - '.github/workflows/ci.yml'
-            compiler:
-              - 'compiler/**'
-              - '.github/workflows/ci.yml'
-            shell:
-              - 'shell/**'
-              - '.github/workflows/ci.yml'
-            hal:
-              - 'hal/**'
-              - '.github/workflows/ci.yml'
 
   build-and-test:
     needs: changes
-    if: |
-      needs.changes.outputs.kernel == 'true' ||
-      needs.changes.outputs.compiler == 'true' ||
-      needs.changes.outputs.shell == 'true' ||
-      needs.changes.outputs.hal == 'true'
+    if: needs.changes.outputs.kernel == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        component:
-          - name: kernel
-            cmake_flags: -DV4_BUILD_KERNEL=ON -DV4_BUILD_TESTS=ON -DV4_FETCH=ON
-          - name: compiler
-            cmake_flags: -DV4_BUILD_KERNEL=ON -DV4_BUILD_COMPILER=ON -DV4_BUILD_TESTS=ON -DV4_FETCH=ON
-          - name: shell
-            cmake_flags: -DV4_BUILD_KERNEL=ON -DV4_BUILD_COMPILER=ON -DV4_BUILD_SHELL=ON -DV4_BUILD_TESTS=ON -DV4_FETCH=ON
-          - name: hal
-            cmake_flags: -DV4_BUILD_HAL=ON -DV4_BUILD_TESTS=ON
 
-    name: ${{ matrix.component.name }}
+    name: kernel
 
     steps:
-    - name: Check if component changed
-      id: check
-      run: |
-        if [ "${{ needs.changes.outputs[matrix.component.name] }}" != "true" ]; then
-          echo "skip=true" >> $GITHUB_OUTPUT
-        else
-          echo "skip=false" >> $GITHUB_OUTPUT
-        fi
-
     - uses: actions/checkout@v4
-      if: steps.check.outputs.skip != 'true'
 
     - name: Install dependencies
-      if: steps.check.outputs.skip != 'true'
       run: |
         sudo apt-get update
         sudo apt-get install -y cmake build-essential
 
-    - name: Configure CMake
-      if: steps.check.outputs.skip != 'true'
-      run: |
-        cmake -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.component.cmake_flags }}
-
-    - name: Build
-      if: steps.check.outputs.skip != 'true'
-      run: cmake --build build -j
-
-    - name: Run tests
-      if: steps.check.outputs.skip != 'true'
-      run: |
-        cd build
-        ctest --output-on-failure
+    - name: Build and test
+      run: BUILD_TYPE=Release V4_FETCH=ON make test

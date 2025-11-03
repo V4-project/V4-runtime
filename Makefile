@@ -18,10 +18,12 @@ help:
 	@echo "  esp32c6       - Build ESP32-C6 runtime"
 	@echo ""
 
-# Build debug
+# Build (default: debug, override with CMAKE_BUILD_TYPE=Release)
+BUILD_TYPE ?= Debug
+
 build:
-	@echo "🔨 Building V4 RTOS (debug)..."
-	@cmake -B build -DCMAKE_BUILD_TYPE=Debug -DV4_BUILD_TESTS=ON
+	@echo "🔨 Building V4 RTOS ($(BUILD_TYPE))..."
+	@cmake -B build -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DV4_BUILD_KERNEL=ON -DV4_BUILD_TESTS=ON $(if $(V4_FETCH),-DV4_FETCH=ON,)
 	@cmake --build build -j
 	@echo "✅ Build complete!"
 
