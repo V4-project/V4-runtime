@@ -168,6 +168,7 @@ extern "C" void app_main(void)
   ESP_LOGI(TAG, "Version: 1.0.0-dev");
 
   // Step 1: Initialize HAL
+  ESP_LOGI(TAG, "[1/4] Initializing HAL...");
   int hal_status = hal_init();
   if (hal_status != 0)
   {
@@ -181,9 +182,16 @@ extern "C" void app_main(void)
   ESP_LOGI(TAG, "HAL initialized");
 
   // Step 2: Initialize board peripherals
+  ESP_LOGI(TAG, "[2/4] Initializing board peripherals...");
   board_init_runtime();
+  // LED blink to indicate board ready
+  board_led_on();
+  vTaskDelay(pdMS_TO_TICKS(100));
+  board_led_off();
+  vTaskDelay(pdMS_TO_TICKS(200));
 
   // Step 3: Initialize V4 VM and task system
+  ESP_LOGI(TAG, "[3/4] Initializing V4 VM and task system...");
   if (v4_init() != 0)
   {
     ESP_LOGE(TAG, "V4 initialization failed");
@@ -193,8 +201,18 @@ extern "C" void app_main(void)
       vTaskDelay(pdMS_TO_TICKS(1000));
     }
   }
+  // LED blinks to indicate VM ready
+  for (int i = 0; i < 2; i++)
+  {
+    board_led_on();
+    vTaskDelay(pdMS_TO_TICKS(100));
+    board_led_off();
+    vTaskDelay(pdMS_TO_TICKS(100));
+  }
+  vTaskDelay(pdMS_TO_TICKS(200));
 
   // Step 4: Initialize V4-link protocol
+  ESP_LOGI(TAG, "[4/4] Initializing V4-link protocol...");
   g_link = new v4rtos::Esp32c6LinkPort(g_vm, 512);
   if (g_link == nullptr)
   {
@@ -211,17 +229,33 @@ extern "C" void app_main(void)
   ESP_LOGI(TAG, "Waiting for bytecode via V4-link protocol...");
   ESP_LOGI(TAG, "Use: v4flash -p /dev/ttyACM0 program.bin");
 
-  // LED blink pattern to indicate ready state
-  board_led_off();
-  vTaskDelay(pdMS_TO_TICKS(100));
-  board_led_on();
-  vTaskDelay(pdMS_TO_TICKS(100));
-  board_led_off();
+  // LED blink pattern to indicate ready state (3 quick blinks)
+  for (int i = 0; i < 3; i++)
+  {
+    board_led_on();
+    vTaskDelay(pdMS_TO_TICKS(100));
+    board_led_off();
+    vTaskDelay(pdMS_TO_TICKS(100));
+  }
 
-  // Main loop: poll for V4-link bytecode
+  ESP_LOGI(TAG, "Starting main loop with heartbeat LED...");
+
+  // Main loop: poll for V4-link bytecode with heartbeat LED
+  uint32_t heartbeat_counter = 0;
+  const uint32_t HEARTBEAT_INTERVAL_MS = 1000;  // 1 second heartbeat
+
   while (1)
   {
     g_link->poll();
+
+    // Heartbeat: blink LED every second to show system is alive
+    heartbeat_counter++;
+    if (heartbeat_counter >= HEARTBEAT_INTERVAL_MS)
+    {
+      board_led_toggle();
+      heartbeat_counter = 0;
+    }
+
     vTaskDelay(pdMS_TO_TICKS(1));  // 1ms polling interval
   }
 }
