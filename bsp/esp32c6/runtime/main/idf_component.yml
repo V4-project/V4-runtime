@@ -1,77 +1,21 @@
 # ESP-IDF Component Dependencies for V4 RTOS Runtime
 #
-# This file declares dependencies on ESP-IDF components and external packages.
-# The ESP-IDF Component Manager resolves and downloads dependencies automatically.
-#
+# Minimal component manifest for ESP-IDF Component Manager.
 # Documentation: https://docs.espressif.com/projects/idf-component-manager/
-
-version: "1.0.0"
-
-description: "V4 RTOS Runtime - Minimal Forth-based RTOS for ESP32-C6"
-
-url: "https://github.com/V4-project/V4-rtos"
-
-# ==============================================================================
-# Component Dependencies
-# ==============================================================================
 
 dependencies:
   # ESP-IDF version requirement
   idf:
     version: ">=5.1.0"
 
-  # Required ESP-IDF components (builtin)
-  # These are automatically available in ESP-IDF projects:
-  # - driver (GPIO, UART, etc.)
-  # - freertos (FreeRTOS kernel)
-  # - esp_system (System initialization)
-  # - log (ESP logging)
-
-  # Future external dependencies can be added here, for example:
-  # - WS2812 RGB LED driver (for NanoC6 RGB LED support)
-  # - USB CDC driver (for V4-link protocol over USB)
-
-# ==============================================================================
-# Repository Information
-# ==============================================================================
-
-repository:
-  type: git
-  url: https://github.com/V4-project/V4-rtos.git
-
-maintainers:
-  - name: V4 Project
-    email: maintainers@v4-project.org
-
-# ==============================================================================
-# License
-# ==============================================================================
-
-license: MIT OR Apache-2.0
-
-# ==============================================================================
-# Tags
-# ==============================================================================
-
-tags:
-  - rtos
-  - forth
-  - esp32-c6
-  - embedded
-  - vm
-
-# ==============================================================================
-# Notes
-# ==============================================================================
+# Note: Required builtin ESP-IDF components (driver, freertos, esp_system, log)
+# are automatically available and don't need to be declared here.
 #
-# V4 RTOS kernel (V4) and HAL (V4-hal) are currently integrated via CMake
-# from local directories or Git submodules. Future versions may publish
-# these as ESP-IDF components via the component registry.
+# V4 kernel and V4-hal are integrated via CMakeLists.txt from local directories
+# or via FetchContent.
 #
-# To add component dependencies in the future:
-#
-#   dependencies:
-#     example-component:
-#       version: "^1.0.0"
-#       git: https://github.com/example/component.git
-#
+# Future external component dependencies can be added here, for example:
+# dependencies:
+#   example-component:
+#     version: "^1.0.0"
+#     git: https://github.com/example/component.git
