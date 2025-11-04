@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-11-05
+
 ### Added
 - **V4 panic handler integration** for ESP32-C6 runtime
   - Comprehensive panic information logging via ESP_LOGE
