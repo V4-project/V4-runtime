@@ -70,9 +70,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y cmake build-essential
 
-    - name: Clone V4 dependency
+    - name: Clone V4-engine dependency
       run: |
-        git clone --depth 1 https://github.com/V4-project/V4.git ../V4 || echo "V4 already exists"
+        git clone --depth 1 https://github.com/V4-project/V4-engine.git ../V4-engine || echo "V4-engine already exists"
 
     - name: Clone V4-hal dependency
       run: |
@@ -97,9 +97,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Clone V4 dependency into runtime
+    - name: Clone V4-engine dependency into runtime
       working-directory: bsp/esp32c6/runtime
-      run: git clone --depth 1 https://github.com/V4-project/V4.git _deps/V4
+      run: git clone --depth 1 https://github.com/V4-project/V4-engine.git _deps/V4-engine
 
     - name: Clone V4-hal dependency into runtime
       working-directory: bsp/esp32c6/runtime
