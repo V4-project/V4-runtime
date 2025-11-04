@@ -83,6 +83,7 @@ set(V4_SRCS
     "${V4_DIR}/src/hal_wrapper.cpp"
     "${V4_DIR}/src/memory.cpp"
     "${V4_DIR}/src/message.cpp"
+    "${V4_DIR}/src/panic.cpp"
     "${V4_DIR}/src/scheduler.cpp"
     "${V4_DIR}/src/task.cpp"
     "${V4_DIR}/src/task_backend_freertos.cpp")
@@ -109,6 +110,7 @@ set(V4LINK_SRCS "${V4LINK_DIR}/src/link.cpp" "${V4LINK_DIR}/src/link_c_api.cpp"
 idf_component_register(
   SRCS
   "main.cpp"
+  "panic_handler.cpp"
   "v4_link_port.cpp"
   "v4_task_platform_esp32.cpp"
   ${V4_SRCS}

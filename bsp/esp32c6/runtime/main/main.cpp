@@ -34,6 +34,9 @@ extern "C"
 // V4-link port
 #include "v4_link_port.hpp"
 
+// V4 panic handler
+#include "panic_handler.hpp"
+
 // ESP-IDF APIs
 #include "driver/gpio.h"
 #include "esp_log.h"
@@ -101,6 +104,9 @@ static int v4_init(void)
   }
 
   ESP_LOGI(TAG, "V4 VM created (arena: %d KB)", VM_ARENA_SIZE / 1024);
+
+  // Register panic handler for fatal errors
+  panic_handler_init(g_vm);
 
   // Initialize task system with 10ms time slice
   v4_err err = vm_task_init(g_vm, 10);
