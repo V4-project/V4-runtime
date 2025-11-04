@@ -135,6 +135,66 @@ If you see references to V4-ports:
 3. V4-runtime has better FreeRTOS integration
 4. Task backend is now abstracted in V4-engine
 
+## V4-engine Panic Handler Integration (2025-11-05)
+
+### Overview
+
+V4-runtime now integrates V4-engine v0.12.0's panic handler API for comprehensive error reporting on ESP32-C6.
+
+### Implementation
+
+**Location**: `bsp/esp32c6/runtime/main/panic_handler.cpp`
+
+**Features**:
+- Detailed panic information logging via ESP_LOGE
+- Formatted output with error code, task ID, instruction pointer
+- Stack state display (depth and top 4 values)
+- Visual indication via rapid LED blinking (100ms on/off)
+- System halt for safe debugging
+
+**Integration**:
+```cpp
+// In main.cpp, after vm_create()
+g_vm = vm_create(&config);
+panic_handler_init(g_vm);  // Register panic handler
+```
+
+**Panic Output Example**:
+```
+E (1234) v4-panic: ╔═══════════════════════════════════════╗
+E (1234) v4-panic: ║  V4 VM PANIC - FATAL ERROR           ║
+E (1234) v4-panic: ╚═══════════════════════════════════════╝
+E (1234) v4-panic: Error Code:    -3 (STACK_OVERFLOW)
+E (1234) v4-panic: Task ID:       0
+E (1234) v4-panic: IP (Instr Ptr): 0x00000042
+E (1234) v4-panic: Message:       Data stack overflow
+E (1234) v4-panic: Stack Depth:   256 / 256
+E (1234) v4-panic: Return Depth:  12 / 64
+E (1234) v4-panic: Stack Values:
+E (1234) v4-panic:   [0]: 0x00001234 (4660)
+E (1234) v4-panic:   [1]: 0xFFFFFFFF (-1)
+E (1234) v4-panic: System halted. Reset required.
+```
+
+### CMakeLists.txt Configuration
+
+Added to `bsp/esp32c6/runtime/main/CMakeLists.txt`:
+```cmake
+# Include panic.cpp from V4-engine
+set(V4_SRCS
+    ...
+    "${V4_DIR}/src/panic.cpp"
+    ...
+)
+
+# Include panic_handler.cpp in component
+idf_component_register(
+  SRCS
+    "panic_handler.cpp"
+    ...
+)
+```
+
 ## Last Updated
 
-2025-11-04: Initial notes on V4-engine task backend integration
+2025-11-05: Added panic handler integration notes

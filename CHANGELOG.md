@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **V4 panic handler integration** for ESP32-C6 runtime
+  - Comprehensive panic information logging via ESP_LOGE
+  - Displays error code, task ID, instruction pointer, stack state
+  - Shows top 4 data stack values for debugging
+  - Visual error indication via rapid LED blinking
+  - System halt on fatal errors for safe debugging
+- Integration with V4-engine v0.12.0 panic handler API
+
+### Changed
+- **Updated to V4-engine v0.12.0** for panic handler support
+
 ## [0.2.0] - 2025-11-05
 
 ### Changed

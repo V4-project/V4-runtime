@@ -33,32 +33,32 @@ static const char* get_error_name(v4_err code)
 {
   switch (code)
   {
-  case 0:
-    return "OK";
-  case -1:
-    return "NOT_FOUND";
-  case -2:
-    return "INVALID_OP";
-  case -3:
-    return "STACK_OVERFLOW";
-  case -4:
-    return "STACK_UNDERFLOW";
-  case -5:
-    return "DIV_BY_ZERO";
-  case -6:
-    return "OUT_OF_MEMORY";
-  case -16:
-    return "INVALID_ARG";
-  case -32:
-    return "TASK_LIMIT";
-  case -33:
-    return "TASK_INVALID_ID";
-  case -48:
-    return "MSG_QUEUE_FULL";
-  case -49:
-    return "MSG_NO_DATA";
-  default:
-    return "UNKNOWN";
+    case 0:
+      return "OK";
+    case -1:
+      return "NOT_FOUND";
+    case -2:
+      return "INVALID_OP";
+    case -3:
+      return "STACK_OVERFLOW";
+    case -4:
+      return "STACK_UNDERFLOW";
+    case -5:
+      return "DIV_BY_ZERO";
+    case -6:
+      return "OUT_OF_MEMORY";
+    case -16:
+      return "INVALID_ARG";
+    case -32:
+      return "TASK_LIMIT";
+    case -33:
+      return "TASK_INVALID_ID";
+    case -48:
+      return "MSG_QUEUE_FULL";
+    case -49:
+      return "MSG_NO_DATA";
+    default:
+      return "UNKNOWN";
   }
 }
 
@@ -85,7 +85,8 @@ static void handle_panic(void* user_data, const struct PanicInfo* info)
   ESP_LOGE(TAG, "╚═══════════════════════════════════════════════════════════╝");
 
   // Log error code and name
-  ESP_LOGE(TAG, "Error Code:    %d (%s)", info->error_code, get_error_name(info->error_code));
+  ESP_LOGE(TAG, "Error Code:    %d (%s)", info->error_code,
+           get_error_name(info->error_code));
 
   // Log task information
   ESP_LOGE(TAG, "Task ID:       %d", info->task_id);
