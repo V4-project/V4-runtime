@@ -8,13 +8,13 @@
 # V4 Kernel Integration
 # ==============================================================================
 
-# Try multiple possible locations for V4, V4-hal, and V4-link 1. Docker: /v4 and /v4-hal
-# (docker-compose volume mounts) 2. CI: runtime/_deps/V4 (GitHub Actions) 3. Local:
-# ../../../../V4 (parent directories)
+# Try multiple possible locations for V4-engine, V4-hal, and V4-link 1. Docker: /v4-engine
+# and /v4-hal (docker-compose volume mounts) 2. CI: runtime/_deps/V4-engine (GitHub
+# Actions) 3. Local: ../../../../V4-engine (parent directories)
 
-set(V4_DIR_DOCKER "/v4")
-set(V4_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4")
-set(V4_DIR_LOCAL "${CMAKE_CURRENT_SOURCE_DIR}/../../../../V4")
+set(V4_DIR_DOCKER "/v4-engine")
+set(V4_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4-engine")
+set(V4_DIR_LOCAL "${CMAKE_CURRENT_SOURCE_DIR}/../../../../V4-engine")
 set(V4HAL_DIR_DOCKER "/v4-hal")
 set(V4HAL_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4-hal")
 set(V4HAL_DIR_LOCAL "${CMAKE_CURRENT_SOURCE_DIR}/../../../../V4-hal")
@@ -22,20 +22,20 @@ set(V4LINK_DIR_DOCKER "/v4-link")
 set(V4LINK_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4-link")
 set(V4LINK_DIR_LOCAL "${CMAKE_CURRENT_SOURCE_DIR}/../../../../V4-link")
 
-# Check V4 location
+# Check V4-engine location
 if(EXISTS "${V4_DIR_DOCKER}/include/v4/vm_api.h")
   set(V4_DIR "${V4_DIR_DOCKER}")
-  message(STATUS "Found V4 at ${V4_DIR} (Docker location)")
+  message(STATUS "Found V4-engine at ${V4_DIR} (Docker location)")
 elseif(EXISTS "${V4_DIR_CI}/include/v4/vm_api.h")
   set(V4_DIR "${V4_DIR_CI}")
-  message(STATUS "Found V4 at ${V4_DIR} (CI location)")
+  message(STATUS "Found V4-engine at ${V4_DIR} (CI location)")
 elseif(EXISTS "${V4_DIR_LOCAL}/include/v4/vm_api.h")
   set(V4_DIR "${V4_DIR_LOCAL}")
-  message(STATUS "Found V4 at ${V4_DIR} (local location)")
+  message(STATUS "Found V4-engine at ${V4_DIR} (local location)")
 else()
   message(
     FATAL_ERROR
-      "V4 not found. Please clone V4 repository to:\n"
+      "V4-engine not found. Please clone V4-engine repository to:\n"
       "  - ${V4_DIR_DOCKER} (Docker build)\n" "  - ${V4_DIR_CI} (CI build)\n"
       "  - ${V4_DIR_LOCAL} (local build)")
 endif()
@@ -76,7 +76,7 @@ else()
       "  - ${V4LINK_DIR_LOCAL} (local build)")
 endif()
 
-# V4 source files (minimal set for runtime)
+# V4-engine source files (with FreeRTOS task backend)
 set(V4_SRCS
     "${V4_DIR}/src/core.cpp"
     "${V4_DIR}/src/arena.cpp"
@@ -84,7 +84,8 @@ set(V4_SRCS
     "${V4_DIR}/src/memory.cpp"
     "${V4_DIR}/src/message.cpp"
     "${V4_DIR}/src/scheduler.cpp"
-    "${V4_DIR}/src/task.cpp")
+    "${V4_DIR}/src/task.cpp"
+    "${V4_DIR}/src/task_backend_freertos.cpp")
 
 # V4-hal source files (C bridge + ESP32 platform)
 set(V4HAL_SRCS
