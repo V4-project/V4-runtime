@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Updated panic handler for V4-engine Unreleased API**
+  - Use `V4PanicInfo` struct with new field names
+  - Use `PRId32` format specifier for portable int32_t formatting
+  - Re-enabled panic_handler.cpp in build configuration
+  - Fixed Docker compose V4-engine mount path (V4 → V4-engine)
+
+### Fixed
+- Fixed compilation errors in panic handler implementation
+  - Added missing LED control functions
+  - Added `<cinttypes>` include for PRId32
+  - Corrected PanicInfo field access
+
 ## [0.3.0] - 2025-11-05
 
 ### Added
