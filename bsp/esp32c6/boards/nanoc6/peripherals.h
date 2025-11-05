@@ -155,7 +155,8 @@ extern "C"
         .intr_type = GPIO_INTR_DISABLE,
     };
     ret = gpio_config(&enable_conf);
-    if (ret != ESP_OK) {
+    if (ret != ESP_OK)
+    {
       return ret;
     }
 
@@ -171,7 +172,8 @@ extern "C"
         .intr_type = GPIO_INTR_DISABLE,
     };
     ret = gpio_config(&rgb_conf);
-    if (ret != ESP_OK) {
+    if (ret != ESP_OK)
+    {
       return ret;
     }
 

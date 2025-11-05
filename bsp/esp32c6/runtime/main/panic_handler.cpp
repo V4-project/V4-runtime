@@ -18,8 +18,8 @@
 #define LED_PIN GPIO_NUM_15
 
 // V4 VM API
-#include "v4/vm_api.h"
 #include "v4/panic.h"  // For PanicInfo struct and vm_set_panic_handler
+#include "v4/vm_api.h"
 
 // ESP-IDF APIs
 #include "esp_log.h"
