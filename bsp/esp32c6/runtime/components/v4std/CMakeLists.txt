@@ -8,6 +8,10 @@ set(V4STD_DIR_DOCKER "/v4-std")
 set(V4STD_DIR_CI "${CMAKE_CURRENT_LIST_DIR}/../../_deps/V4-std")
 set(V4STD_DIR_LOCAL "${CMAKE_CURRENT_LIST_DIR}/../../../../../V4-std")
 
+message(STATUS "V4STD: CMAKE_CURRENT_LIST_DIR = ${CMAKE_CURRENT_LIST_DIR}")
+message(STATUS "V4STD: Checking CI path = ${V4STD_DIR_CI}")
+message(STATUS "V4STD: Looking for ${V4STD_DIR_CI}/include/v4std/ddt.h")
+
 if(DEFINED V4STD_DIR)
   # Passed from parent CMakeLists.txt
   message(STATUS "Using V4-std from parent: ${V4STD_DIR}")
