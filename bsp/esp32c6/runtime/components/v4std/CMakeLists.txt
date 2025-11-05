@@ -5,7 +5,7 @@
 # ../../../../../V4-std
 
 set(V4STD_DIR_DOCKER "/v4-std")
-set(V4STD_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4-std")
+set(V4STD_DIR_CI "${PROJECT_SOURCE_DIR}/_deps/V4-std")
 set(V4STD_DIR_LOCAL "${CMAKE_CURRENT_LIST_DIR}/../../../../../V4-std")
 
 if(DEFINED V4STD_DIR)
