@@ -37,9 +37,10 @@ extern "C"
 // V4 panic handler
 #include "panic_handler.hpp"
 
-// V4-std integration
-#include "esp32_led_hal.hpp"
-#include "esp32c6_ddt_provider.hpp"
+// V4-std integration (chip-level)
+#include "../../hal_esp32/esp32_led_hal.hpp"
+// V4-std integration (board-level)
+#include "../../boards/nanoc6/nanoc6_ddt_provider.hpp"
 #include "v4std/ddt.hpp"
 #include "v4std/sys_led.hpp"
 
@@ -78,10 +79,10 @@ static struct Vm* g_vm = nullptr;
 /** Global V4-link port instance */
 static v4rtos::Esp32c6LinkPort* g_link = nullptr;
 
-/** Global DDT provider */
-static v4rtos::Esp32c6DdtProvider g_ddt_provider;
+/** Global DDT provider (M5Stack NanoC6) */
+static v4rtos::NanoC6DdtProvider g_ddt_provider;
 
-/** Global LED HAL */
+/** Global LED HAL (ESP32 family) */
 static v4rtos::Esp32LedHal g_led_hal;
 
 // ==============================================================================

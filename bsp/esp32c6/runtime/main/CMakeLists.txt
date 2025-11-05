@@ -113,14 +113,17 @@ idf_component_register(
   "panic_handler.cpp"
   "v4_link_port.cpp"
   "v4_task_platform_esp32.cpp"
-  "esp32c6_ddt_provider.cpp"
-  "esp32_led_hal.cpp"
+  # Board-specific sources (M5Stack NanoC6)
+  "../../boards/nanoc6/nanoc6_ddt_provider.cpp"
+  # Chip-level HAL sources (ESP32 family)
+  "../../hal_esp32/esp32_led_hal.cpp"
   ${V4_SRCS}
   ${V4HAL_SRCS}
   ${V4LINK_SRCS}
   INCLUDE_DIRS
   "."
   "../../boards"
+  "../../hal_esp32"
   "${V4_DIR}/include"
   "${V4HAL_DIR}/include"
   "${V4HAL_DIR}/ports/esp32"

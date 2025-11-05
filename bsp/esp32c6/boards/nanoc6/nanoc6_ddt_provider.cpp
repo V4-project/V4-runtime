@@ -1,23 +1,27 @@
 /**
- * @file esp32c6_ddt_provider.cpp
- * @brief DDT Provider for ESP32-C6 (M5Stack NanoC6)
+ * @file nanoc6_ddt_provider.cpp
+ * @brief DDT Provider for M5Stack NanoC6
+ *
+ * Board-specific device descriptor table implementation.
  *
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-#include "esp32c6_ddt_provider.hpp"
+#include "nanoc6_ddt_provider.hpp"
 
 extern "C"
 {
-#include "nanoc6/board.h"
+#include "board.h"
 }
 
 namespace v4rtos
 {
 
-v4std::span<const v4dev_desc_t> Esp32c6DdtProvider::get_devices() const
+v4std::span<const v4dev_desc_t> NanoC6DdtProvider::get_devices() const
 {
   // Device descriptor table for M5Stack NanoC6
+  // Board: M5Stack NanoC6
+  // MCU: ESP32-C6
   static constexpr v4dev_desc_t devices[] = {
       // STATUS LED (GPIO7, active-high)
       {
