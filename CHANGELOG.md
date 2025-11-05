@@ -7,20 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-- **Updated panic handler for V4-engine Unreleased API**
-  - Use `V4PanicInfo` struct with new field names
-  - Use `PRId32` format specifier for portable int32_t formatting
-  - Re-enabled panic_handler.cpp in build configuration
-  - Fixed Docker compose V4-engine mount path (V4 → V4-engine)
-
-### Fixed
-- Fixed compilation errors in panic handler implementation
-  - Added missing LED control functions
-  - Added `<cinttypes>` include for PRId32
-  - Corrected PanicInfo field access
-
-## [0.3.0] - 2025-11-05
+## [0.3.1] - 2025-11-05
 
 ### Added
 - **V4 panic handler integration** for ESP32-C6 runtime
@@ -29,10 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Shows top 4 data stack values for debugging
   - Visual error indication via rapid LED blinking
   - System halt on fatal errors for safe debugging
-- Integration with V4-engine v0.12.0 panic handler API
 
 ### Changed
-- **Updated to V4-engine v0.12.0** for panic handler support
+- **Updated to V4-engine v0.13.0** for improved panic handler API
+  - Use `V4PanicInfo` struct with correct field names
+  - Use `PRId32` format specifier for portable int32_t formatting
+- Fixed Docker compose V4-engine mount path (V4 → V4-engine)
+
+### Fixed
+- Fixed compilation errors in panic handler implementation
+  - Added missing LED control functions
+  - Added `<cinttypes>` include for PRId32
+  - Corrected PanicInfo field access
 
 ## [0.2.0] - 2025-11-05
 
@@ -99,3 +94,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build system (CMake + Makefile wrapper)
 - Documentation skeleton
 - MIT + Apache 2.0 dual licensing
+
+[Unreleased]: https://github.com/V4-project/V4-runtime/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/V4-project/V4-runtime/compare/v0.2.0...v0.3.1
+[0.2.0]: https://github.com/V4-project/V4-runtime/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/V4-project/V4-runtime/compare/v0.0.0...v0.1.0
+[0.0.0]: https://github.com/V4-project/V4-runtime/releases/tag/v0.0.0
