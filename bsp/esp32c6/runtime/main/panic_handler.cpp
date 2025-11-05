@@ -82,7 +82,7 @@ static const char* get_error_name(v4_err code)
  * Called by VM when a fatal error occurs.
  * Logs error details and provides visual indication via LED.
  */
-static void handle_panic(void* user_data, const struct PanicInfo* info)
+static void handle_panic(void* user_data, const V4PanicInfo* info)
 {
   (void)user_data;  // Unused
 
@@ -102,38 +102,26 @@ static void handle_panic(void* user_data, const struct PanicInfo* info)
   ESP_LOGE(TAG, "Error Code:    %d (%s)", info->error_code,
            get_error_name(info->error_code));
 
-  // Log task information
-  ESP_LOGE(TAG, "Task ID:       %d", info->task_id);
-
-  // Log instruction pointer
-  if (info->ip != 0xFFFFFFFF)
-  {
-    ESP_LOGE(TAG, "IP (Instr Ptr): 0x%08X", (unsigned int)info->ip);
-  }
-
-  // Log error message if available
-  if (info->message && info->message[0] != '\0')
-  {
-    ESP_LOGE(TAG, "Message:       %s", info->message);
-  }
+  // Log program counter
+  ESP_LOGE(TAG, "PC:            0x%08X", (unsigned int)info->pc);
 
   // Log stack state
-  ESP_LOGE(TAG, "Stack Depth:   %d / 256", info->stack_depth);
-  ESP_LOGE(TAG, "Return Depth:  %d / 64", info->return_depth);
+  ESP_LOGE(TAG, "Stack Depth:   %d / 256", info->ds_depth);
+  ESP_LOGE(TAG, "Return Depth:  %d / 64", info->rs_depth);
 
   // Log top stack values (up to 4)
-  if (info->stack_depth > 0)
+  if (info->has_stack_data && info->ds_depth > 0)
   {
     ESP_LOGE(TAG, "Stack Values:");
-    int count = info->stack_depth < 4 ? info->stack_depth : 4;
+    int count = info->ds_depth < 4 ? info->ds_depth : 4;
     for (int i = 0; i < count; i++)
     {
       ESP_LOGE(TAG, "  [%d]: 0x%08X (%d)", i, (unsigned int)info->stack[i],
                (int)info->stack[i]);
     }
-    if (info->stack_depth > 4)
+    if (info->ds_depth > 4)
     {
-      ESP_LOGE(TAG, "  ... (%d more values)", info->stack_depth - 4);
+      ESP_LOGE(TAG, "  ... (%d more values)", info->ds_depth - 4);
     }
   }
 
