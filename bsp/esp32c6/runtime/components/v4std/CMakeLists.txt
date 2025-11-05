@@ -5,7 +5,7 @@
 # ../../../../../V4-std
 
 set(V4STD_DIR_DOCKER "/v4-std")
-set(V4STD_DIR_CI "${PROJECT_SOURCE_DIR}/_deps/V4-std")
+set(V4STD_DIR_CI "${CMAKE_CURRENT_LIST_DIR}/../../_deps/V4-std")
 set(V4STD_DIR_LOCAL "${CMAKE_CURRENT_LIST_DIR}/../../../../../V4-std")
 
 if(DEFINED V4STD_DIR)
@@ -28,20 +28,15 @@ else()
       "  - ${V4STD_DIR_LOCAL} (local build)")
 endif()
 
-# V4-std source files
-set(COMPONENT_SRCS "${V4STD_DIR}/src/ddt.cpp" "${V4STD_DIR}/src/sys_handlers.cpp"
-                   "${V4STD_DIR}/src/sys_led.cpp")
-
-# Include directories
-set(COMPONENT_ADD_INCLUDEDIRS
-    "${V4STD_DIR}/include"
-    # Note: generated directory is added via target_include_directories after
-    # register_component
-)
-
-set(COMPONENT_REQUIRES)
-
-register_component()
+# Register component with V4-std sources
+idf_component_register(
+  SRCS
+  "${V4STD_DIR}/src/ddt.cpp"
+  "${V4STD_DIR}/src/sys_handlers.cpp"
+  "${V4STD_DIR}/src/sys_led.cpp"
+  INCLUDE_DIRS
+  "${V4STD_DIR}/include"
+  REQUIRES)
 
 # Create generated directory before build
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/generated/v4std")
