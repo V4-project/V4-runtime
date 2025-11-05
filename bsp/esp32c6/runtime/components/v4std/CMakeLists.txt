@@ -1,10 +1,33 @@
 # V4-std ESP-IDF Component Links to V4-std library in V4-project/V4-std
 
-# Support both Docker (V4_STD_PATH env var) and local builds (relative path)
-if(DEFINED ENV{V4_STD_PATH})
-  set(V4STD_DIR "$ENV{V4_STD_PATH}")
+# Try multiple possible locations for V4-std
+# 1. Parent-provided V4STD_DIR variable (preferred)
+# 2. Docker: /v4-std
+# 3. CI: runtime/_deps/V4-std
+# 4. Local: ../../../../../V4-std
+
+set(V4STD_DIR_DOCKER "/v4-std")
+set(V4STD_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../../_deps/V4-std")
+set(V4STD_DIR_LOCAL "${CMAKE_CURRENT_LIST_DIR}/../../../../../V4-std")
+
+if(DEFINED V4STD_DIR)
+  # Passed from parent CMakeLists.txt
+  message(STATUS "Using V4-std from parent: ${V4STD_DIR}")
+elseif(EXISTS "${V4STD_DIR_DOCKER}/include/v4std/ddt.h")
+  set(V4STD_DIR "${V4STD_DIR_DOCKER}")
+  message(STATUS "Found V4-std at ${V4STD_DIR} (Docker location)")
+elseif(EXISTS "${V4STD_DIR_CI}/include/v4std/ddt.h")
+  set(V4STD_DIR "${V4STD_DIR_CI}")
+  message(STATUS "Found V4-std at ${V4STD_DIR} (CI location)")
+elseif(EXISTS "${V4STD_DIR_LOCAL}/include/v4std/ddt.h")
+  set(V4STD_DIR "${V4STD_DIR_LOCAL}")
+  message(STATUS "Found V4-std at ${V4STD_DIR} (local location)")
 else()
-  set(V4STD_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../../../V4-std")
+  message(FATAL_ERROR
+    "V4-std not found. Please clone V4-std repository to:\n"
+    "  - ${V4STD_DIR_DOCKER} (Docker build)\n"
+    "  - ${V4STD_DIR_CI} (CI build)\n"
+    "  - ${V4STD_DIR_LOCAL} (local build)")
 endif()
 
 # V4-std source files
