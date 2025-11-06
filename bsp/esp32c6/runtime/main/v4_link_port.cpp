@@ -21,11 +21,18 @@ static void usb_serial_jtag_write_callback(void* user, const uint8_t* data, size
 {
   (void)user;  // Unused
 
+  ESP_LOGI(TAG, "Sending %d bytes", len);
+  ESP_LOG_BUFFER_HEX(TAG, data, len);
+
   // Send response data over USB Serial/JTAG
   int written = usb_serial_jtag_write_bytes((const char*)data, len, portMAX_DELAY);
   if (written < 0)
   {
     ESP_LOGE(TAG, "Failed to write to USB Serial/JTAG");
+  }
+  else
+  {
+    ESP_LOGI(TAG, "Successfully wrote %d bytes", written);
   }
 }
 
@@ -75,6 +82,9 @@ void Esp32c6LinkPort::poll()
 
   if (len > 0)
   {
+    ESP_LOGI(TAG, "Received %d bytes", len);
+    ESP_LOG_BUFFER_HEX(TAG, buffer, len);
+
     // Feed received bytes to V4-link
     for (int i = 0; i < len; ++i)
     {

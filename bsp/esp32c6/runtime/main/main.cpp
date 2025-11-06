@@ -37,12 +37,17 @@ extern "C"
 // V4 panic handler
 #include "panic_handler.hpp"
 
-// V4-std integration (chip-level)
-#include "../../hal_esp32/esp32_led_hal.hpp"
-// V4-std integration (board-level)
-#include "../../boards/nanoc6/nanoc6_ddt_provider.hpp"
-#include "v4std/ddt.hpp"
-#include "v4std/sys_led.hpp"
+// V4-std integration (chip-level) - TEMPORARILY DISABLED
+// #include "../../hal_esp32/esp32_led_hal.hpp"
+// V4-std integration (board-level) - TEMPORARILY DISABLED
+// #include "../../boards/nanoc6/nanoc6_ddt_provider.hpp"
+// RGB LED driver
+extern "C"
+{
+#include "../../hal_esp32/esp32_rgb_led.h"
+}
+// #include "v4std/ddt.hpp"  // Temporarily disabled
+// #include "v4std/sys_led.hpp"  // Temporarily disabled
 
 // ESP-IDF APIs
 #include "driver/gpio.h"
@@ -79,11 +84,11 @@ static struct Vm* g_vm = nullptr;
 /** Global V4-link port instance */
 static v4rtos::Esp32c6LinkPort* g_link = nullptr;
 
-/** Global DDT provider (M5Stack NanoC6) */
-static v4rtos::NanoC6DdtProvider g_ddt_provider;
+/** Global DDT provider (M5Stack NanoC6) - TEMPORARILY DISABLED */
+// static v4rtos::NanoC6DdtProvider g_ddt_provider;
 
-/** Global LED HAL (ESP32 family) */
-static v4rtos::Esp32LedHal g_led_hal;
+/** Global LED HAL (ESP32 family) - TEMPORARILY DISABLED */
+// static v4rtos::Esp32LedHal g_led_hal;
 
 // ==============================================================================
 // V4 VM Initialization
@@ -99,6 +104,8 @@ static v4rtos::Esp32LedHal g_led_hal;
  */
 static int v4_init(void)
 {
+  ESP_LOGI(TAG, "v4_init: Starting...");
+
   // Configure VM with static arena
   VmConfig config = {
       .mem = vm_arena,
@@ -108,8 +115,13 @@ static int v4_init(void)
       .arena = nullptr  // Use malloc for word names (ESP-IDF heap)
   };
 
+  ESP_LOGI(TAG, "v4_init: Config prepared, calling vm_create...");
+
   // Create VM instance
   g_vm = vm_create(&config);
+
+  ESP_LOGI(TAG, "v4_init: vm_create returned, checking result...");
+
   if (g_vm == nullptr)
   {
     ESP_LOGE(TAG, "Failed to create VM instance");
@@ -118,11 +130,18 @@ static int v4_init(void)
 
   ESP_LOGI(TAG, "V4 VM created (arena: %d KB)", VM_ARENA_SIZE / 1024);
 
+  ESP_LOGI(TAG, "v4_init: Calling panic_handler_init...");
+
   // Register panic handler for fatal errors
   panic_handler_init(g_vm);
 
+  ESP_LOGI(TAG, "v4_init: Calling vm_task_init...");
+
   // Initialize task system with 10ms time slice
   v4_err err = vm_task_init(g_vm, 10);
+
+  ESP_LOGI(TAG, "v4_init: vm_task_init returned %d", err);
+
   if (err != 0)
   {
     ESP_LOGE(TAG, "Failed to initialize task system: %d", err);
@@ -135,7 +154,7 @@ static int v4_init(void)
 }
 
 // ==============================================================================
-// V4-std Initialization
+// V4-std Initialization (TEMPORARILY DISABLED)
 // ==============================================================================
 
 /**
@@ -148,6 +167,7 @@ static int v4_init(void)
  *
  * @return 0 on success, negative error code on failure
  */
+/*
 static int v4std_init(void)
 {
   // Set DDT provider
@@ -165,6 +185,7 @@ static int v4std_init(void)
   ESP_LOGI(TAG, "V4-std initialized");
   return 0;
 }
+*/
 
 // ==============================================================================
 // Board Initialization
@@ -241,6 +262,25 @@ extern "C" void app_main(void)
   board_led_off();
   vTaskDelay(pdMS_TO_TICKS(200));
 
+  // Initialize RGB LED
+  ESP_LOGI(TAG, "Initializing RGB LED...");
+  // TEMPORARY: Commented out for debugging
+  // esp_err_t ret = esp32_rgb_led_init(RGB_LED_PIN, RGB_LED_COUNT);
+  // if (ret != ESP_OK)
+  // {
+  //   ESP_LOGW(TAG, "RGB LED initialization failed: %d", ret);
+  // }
+  // else
+  // {
+  //   ESP_LOGI(TAG, "RGB LED initialized");
+  //   // Test RGB LED with red color
+  //   esp32_rgb_led_set(0, 255, 0, 0);  // Red
+  //   esp32_rgb_led_refresh();
+  //   vTaskDelay(pdMS_TO_TICKS(500));
+  //   esp32_rgb_led_clear_all();
+  // }
+  ESP_LOGI(TAG, "RGB LED initialization skipped for debugging");
+
   // Step 3: Initialize V4 VM and task system
   ESP_LOGI(TAG, "[3/5] Initializing V4 VM and task system...");
   if (v4_init() != 0)
@@ -262,17 +302,18 @@ extern "C" void app_main(void)
   }
   vTaskDelay(pdMS_TO_TICKS(200));
 
-  // Step 4: Initialize V4-std
-  ESP_LOGI(TAG, "[4/5] Initializing V4-std...");
-  if (v4std_init() != 0)
-  {
-    ESP_LOGE(TAG, "V4-std initialization failed");
-    ESP_LOGE(TAG, "System halted.");
-    while (1)
-    {
-      vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-  }
+  // Step 4: Initialize V4-std (TEMPORARILY DISABLED)
+  // ESP_LOGI(TAG, "[4/5] Initializing V4-std...");
+  // if (v4std_init() != 0)
+  // {
+  //   ESP_LOGE(TAG, "V4-std initialization failed");
+  //   ESP_LOGE(TAG, "System halted.");
+  //   while (1)
+  //   {
+  //     vTaskDelay(pdMS_TO_TICKS(1000));
+  //   }
+  // }
+  ESP_LOGI(TAG, "[4/5] V4-std initialization skipped (testing V4-hal direct)");
 
   // Step 5: Initialize V4-link protocol
   ESP_LOGI(TAG, "[5/5] Initializing V4-link protocol...");

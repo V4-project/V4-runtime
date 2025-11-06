@@ -113,10 +113,12 @@ idf_component_register(
   "panic_handler.cpp"
   "v4_link_port.cpp"
   "v4_task_platform_esp32.cpp"
-  # Board-specific sources (M5Stack NanoC6)
-  "../../boards/nanoc6/nanoc6_ddt_provider.cpp"
-  # Chip-level HAL sources (ESP32 family)
-  "../../hal_esp32/esp32_led_hal.cpp"
+  # Board-specific sources (M5Stack NanoC6) - TEMPORARILY DISABLED
+  # "../../boards/nanoc6/nanoc6_ddt_provider.cpp"
+  # Chip-level HAL sources (ESP32 family) - TEMPORARILY DISABLED
+  # "../../hal_esp32/esp32_led_hal.cpp"
+  # "../../hal_esp32/esp32_rgb_led.c"
+  # "../../hal_esp32/led_strip_encoder.c"
   ${V4_SRCS}
   ${V4HAL_SRCS}
   ${V4LINK_SRCS}
@@ -134,7 +136,8 @@ idf_component_register(
   esp_system
   esp_timer
   log
-  v4std)
+  # v4std  # Temporarily disabled to test V4-hal direct SYS calls
+)
 
 # ==============================================================================
 # Compiler Options
@@ -149,4 +152,5 @@ target_compile_options(${COMPONENT_LIB} PRIVATE -fno-exceptions -fno-rtti -Wall 
 
 # Platform defines
 target_compile_definitions(${COMPONENT_LIB} PRIVATE HAL_PLATFORM_ESP32 V4_EMBEDDED
-                                                    V4_USE_V4STD)
+                                                    # V4_USE_V4STD  # Temporarily disabled
+)

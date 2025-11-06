@@ -205,9 +205,10 @@ extern "C"
     if (ret != ESP_OK)
       return ret;
 
-    ret = board_rgb_led_init();
-    if (ret != ESP_OK)
-      return ret;
+    // TEMPORARY: Skip RGB LED init for debugging
+    // ret = board_rgb_led_init();
+    // if (ret != ESP_OK)
+    //   return ret;
 
     // Turn off LED initially
     board_led_off();
