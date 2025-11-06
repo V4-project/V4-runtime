@@ -6,16 +6,16 @@ services:
     image: espressif/idf:v5.3
     container_name: v4-rtos-esp-idf
     volumes:
-      # Mount project directory
-      - .:/project
+      # Mount V4-runtime project directory
+      - ../../:/project
       # Mount V4-engine (required for VM core)
-      - ../V4-engine:/v4-engine:ro
+      - ../../../V4-engine:/v4-engine:ro
       # Mount V4-hal (required for HAL implementation)
-      - ../V4-hal:/v4-hal:ro
+      - ../../../V4-hal:/v4-hal:ro
       # Mount V4-link (required for bytecode protocol)
-      - ../V4-link:/v4-link:ro
+      - ../../../V4-link:/v4-link:ro
       # Mount V4-std (required for device-independent standard library)
-      - ../V4-std:/v4-std:ro
+      - ../../../V4-std:/v4-std:ro
       # Mount SSH keys for git operations (optional)
       - ~/.ssh:/root/.ssh:ro
       # Persistent build cache
@@ -26,13 +26,13 @@ services:
       - V4_HAL_PATH=/v4-hal
       - V4_LINK_PATH=/v4-link
       - V4_STD_PATH=/v4-std
-    working_dir: /project/bsp/esp32c6/runtime
+    working_dir: ${PROJECT_DIR:-/project/bsp/esp32c6/runtime}
     command: /bin/bash
     tty: true
     stdin_open: true
     # Device access for flashing
     devices:
-      - /dev/ttyACM0:/dev/ttyACM0
+      - ${ESP_DEVICE:-/dev/ttyACM0}:${ESP_DEVICE:-/dev/ttyACM0}
     privileged: false
     network_mode: bridge
 
