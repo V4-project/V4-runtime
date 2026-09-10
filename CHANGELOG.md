@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-09-10
+
+### Fixed
+- Use engine errors.def messages for panic diagnostics instead of an inconsistent local numeric mapping.
+- Return from the VM panic callback after logging and lighting the LED, allowing V4-link 0.5 to send the execution error and accept inspection/RESET commands. VM state is not rolled back.
+- Align CMake and firmware version reporting with the 0.3.x release series; remove the stale 1.0.0/1.0.0-dev placeholders.
+
+### Compatibility
+- Detailed host error reporting requires V4-link 0.5.0 and v4_cli 0.6.0. Firmware must be rebuilt and flashed to use the new behavior.
+
 ## [0.3.1] - 2025-11-05
 
 ### Added

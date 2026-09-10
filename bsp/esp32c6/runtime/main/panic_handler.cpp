@@ -18,13 +18,12 @@
 #define LED_PIN GPIO_NUM_15
 
 // V4 VM API
+#include "v4/errors.hpp"
 #include "v4/panic.h"  // For PanicInfo struct and vm_set_panic_handler
 #include "v4/vm_api.h"
 
 // ESP-IDF APIs
 #include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 
 static const char* TAG = "v4-panic";
 
@@ -36,51 +35,10 @@ static void board_led_on()
   gpio_set_level(LED_PIN, 1);
 }
 
-static void board_led_off()
-{
-  gpio_set_level(LED_PIN, 0);
-}
-
-/**
- * @brief Get human-readable string for VM error code
- */
-static const char* get_error_name(v4_err code)
-{
-  switch (code)
-  {
-    case 0:
-      return "OK";
-    case -1:
-      return "NOT_FOUND";
-    case -2:
-      return "INVALID_OP";
-    case -3:
-      return "STACK_OVERFLOW";
-    case -4:
-      return "STACK_UNDERFLOW";
-    case -5:
-      return "DIV_BY_ZERO";
-    case -6:
-      return "OUT_OF_MEMORY";
-    case -16:
-      return "INVALID_ARG";
-    case -32:
-      return "TASK_LIMIT";
-    case -33:
-      return "TASK_INVALID_ID";
-    case -48:
-      return "MSG_QUEUE_FULL";
-    case -49:
-      return "MSG_NO_DATA";
-    default:
-      return "UNKNOWN";
-  }
-}
-
 /**
  * @brief Panic handler callback
  *
- * Called by VM when a fatal error occurs.
+ * Called by VM when execution reports an error.
  * Logs error details and provides visual indication via LED.
  */
 static void handle_panic(void* user_data, const V4PanicInfo* info)
@@ -96,12 +54,12 @@ static void handle_panic(void* user_data, const V4PanicInfo* info)
   // Log panic header
   ESP_LOGE(TAG, "");
   ESP_LOGE(TAG, "╔═══════════════════════════════════════════════════════════╗");
-  ESP_LOGE(TAG, "║              V4 VM PANIC - FATAL ERROR                    ║");
+  ESP_LOGE(TAG, "║              V4 VM EXECUTION ERROR                       ║");
   ESP_LOGE(TAG, "╚═══════════════════════════════════════════════════════════╝");
 
   // Log error code and name
   ESP_LOGE(TAG, "Error Code:    %" PRId32 " (%s)", info->error_code,
-           get_error_name(info->error_code));
+           err_str(static_cast<Err>(info->error_code)));
 
   // Log program counter
   ESP_LOGE(TAG, "PC:            0x%08X", (unsigned int)info->pc);
@@ -127,18 +85,9 @@ static void handle_panic(void* user_data, const V4PanicInfo* info)
   }
 
   ESP_LOGE(TAG, "");
-  ESP_LOGE(TAG, "System halted. Reset required.");
-  ESP_LOGE(TAG, "");
-
-  // Visual indication: rapid LED blinking
-  // Infinite loop to halt execution
-  while (1)
-  {
-    board_led_on();
-    vTaskDelay(pdMS_TO_TICKS(100));
-    board_led_off();
-    vTaskDelay(pdMS_TO_TICKS(100));
-  }
+  ESP_LOGE(TAG, "Execution stopped; returning error to host. State is not rolled back.");
+  board_led_on();
+  // Return to vm_exec so V4-link can send VM_ERROR and accept inspection/RESET.
 }
 
 extern "C" void panic_handler_init(struct Vm* vm)

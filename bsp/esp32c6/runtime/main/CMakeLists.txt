@@ -153,6 +153,7 @@ target_compile_options(${COMPONENT_LIB} PRIVATE -fno-exceptions -fno-rtti -Wall 
 
 # Platform defines
 target_compile_definitions(
-  ${COMPONENT_LIB} PRIVATE HAL_PLATFORM_ESP32 V4_EMBEDDED
-                           # V4_USE_V4STD  # Temporarily disabled
+  ${COMPONENT_LIB}
+  PRIVATE HAL_PLATFORM_ESP32 V4_EMBEDDED V4_RUNTIME_VERSION="${PROJECT_VER}"
+          # V4_USE_V4STD  # Temporarily disabled
 )

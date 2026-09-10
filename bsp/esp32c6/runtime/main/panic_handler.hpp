@@ -22,8 +22,9 @@ extern "C"
    *
    * Registers a panic handler that:
    * - Logs error messages via ESP_LOGE
-   * - Blinks LED rapidly to indicate error
+   * - Lights the LED to indicate error
    * - Formats detailed panic information
+   * - Returns so V4-link can report the engine error and accept further commands
    *
    * Must be called after vm_create() and before any VM execution.
    *

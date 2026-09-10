@@ -19,7 +19,7 @@ Use the host CLI's `v4 repl --port /dev/ttyACM0` to enter Forth source.
 ## Implemented and incomplete parts
 
 - VM initialization, FreeRTOS task backend, board initialization and V4-link reception are present.
-- The panic handler provides ESP logging, LED indication and a halt loop.
+- The panic handler uses engine error messages, logs diagnostics and lights the LED, then returns so V4-link can report the failure. Execution errors do not roll back VM state; inspect it or RESET before retrying.
 - V4-std initialization, NanoC6 DDT provider and LED HAL build integration are commented out.
 - RGB LED driver sources exist, but their build entries and initialization are commented out.
 - The current engine requires a global `v4_register_sys_handler()` callback for SYS calls. This runtime does not register it yet.

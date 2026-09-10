@@ -237,7 +237,7 @@ static void board_init_runtime(void)
 extern "C" void app_main(void)
 {
   ESP_LOGI(TAG, "=== V4 RTOS Runtime ===");
-  ESP_LOGI(TAG, "Version: 1.0.0-dev");
+  ESP_LOGI(TAG, "Version: %s", V4_RUNTIME_VERSION);
 
   // Step 1: Initialize HAL
   ESP_LOGI(TAG, "[1/4] Initializing HAL...");
