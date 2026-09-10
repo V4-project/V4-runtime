@@ -73,21 +73,41 @@ known warnings and configuration caveats.
 
 ## Build and device workflow
 
-The Compose definition mounts sibling V4-engine, V4-hal and V4-link repositories at the paths used by the main component:
+The Compose definition mounts sibling V4-engine, V4-hal and V4-link repositories.
+Ordinary builds need no serial device, SSH keys or V4-std checkout:
 
 ```bash
-cd bsp/esp32c6
-docker compose run --rm esp-idf
-# Inside the container, at the default runtime working directory:
-idf.py build
+make esp32c6 DOCKER=1
+# Or, from any directory (replace the absolute path):
+make -f /path/to/V4-runtime/Makefile esp32c6 DOCKER=1
 ```
 
-Compose expects a serial device (default /dev/ttyACM0). PROJECT_DIR and ESP_DEVICE can change the working directory and device.
-Inspect local configuration before use.
+The Make target selects the Compose file explicitly; mount paths are relative to
+that file. The container working directory is fixed to the runtime IDF project;
+legacy `PROJECT_DIR` overrides are no longer used. Builds reuse the project build
+directory and existing sdkconfig. For isolated, clean size measurements use
+`make size-build` instead. Compose runs as the image's default user; generated
+files may therefore be root-owned on Linux.
 
-Native builds currently have a path mismatch: the main component's local fallback resolves to
-V4-runtime/V4-engine (and similarly for hal/link), not the sibling repositories in the workspace.
-It also searches runtime/_deps and the container mount paths. Prepare a supported layout or fix the build paths before relying on native `idf.py build`.
+For native builds, source ESP-IDF 5.5.5 and run `make esp32c6`. Dependencies resolve
+in this order: explicit CMake `V4_DIR` / `V4HAL_DIR` / `V4LINK_DIR`, then corresponding
+environment `V4_ENGINE_PATH` / `V4_HAL_PATH` / `V4_LINK_PATH`, then project `_deps`,
+Docker `/v4-*` mounts, and sibling repositories. Relative overrides are resolved
+against `bsp/esp32c6/runtime`, not the shell's working directory. Invalid explicit
+paths fail rather than silently selecting another checkout. CMake `-D` overrides
+persist in the build cache; change or unset them explicitly when switching layouts.
+
+Hardware access is opt-in. For example, from the runtime repository root:
+
+```bash
+ESP_DEVICE=/dev/ttyACM0 docker compose \
+  -f bsp/esp32c6/docker-compose.yml \
+  -f bsp/esp32c6/docker-compose.device.yml run --rm esp-idf idf.py flash monitor
+```
+
+Review local Compose environment settings before flashing. The device override
+does not require privileged mode. Existing `.env` files are not migrated.
+Host-only path regression tests: `python3 -m unittest discover -s tests/build_paths -v`.
 
 After a successful build, flash the intended board:
 

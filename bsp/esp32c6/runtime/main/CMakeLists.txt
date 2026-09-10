@@ -8,73 +8,10 @@
 # V4 Kernel Integration
 # ==============================================================================
 
-# Try multiple possible locations for V4-engine, V4-hal, and V4-link 1. Docker: /v4-engine
-# and /v4-hal (docker-compose volume mounts) 2. CI: runtime/_deps/V4-engine (GitHub
-# Actions) 3. Local: ../../../../V4-engine (parent directories)
-
-set(V4_DIR_DOCKER "/v4-engine")
-set(V4_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4-engine")
-set(V4_DIR_LOCAL "${CMAKE_CURRENT_SOURCE_DIR}/../../../../V4-engine")
-set(V4HAL_DIR_DOCKER "/v4-hal")
-set(V4HAL_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4-hal")
-set(V4HAL_DIR_LOCAL "${CMAKE_CURRENT_SOURCE_DIR}/../../../../V4-hal")
-set(V4LINK_DIR_DOCKER "/v4-link")
-set(V4LINK_DIR_CI "${CMAKE_CURRENT_SOURCE_DIR}/../_deps/V4-link")
-set(V4LINK_DIR_LOCAL "${CMAKE_CURRENT_SOURCE_DIR}/../../../../V4-link")
-
-# Check V4-engine location
-if(EXISTS "${V4_DIR_DOCKER}/include/v4/vm_api.h")
-  set(V4_DIR "${V4_DIR_DOCKER}")
-  message(STATUS "Found V4-engine at ${V4_DIR} (Docker location)")
-elseif(EXISTS "${V4_DIR_CI}/include/v4/vm_api.h")
-  set(V4_DIR "${V4_DIR_CI}")
-  message(STATUS "Found V4-engine at ${V4_DIR} (CI location)")
-elseif(EXISTS "${V4_DIR_LOCAL}/include/v4/vm_api.h")
-  set(V4_DIR "${V4_DIR_LOCAL}")
-  message(STATUS "Found V4-engine at ${V4_DIR} (local location)")
-else()
-  message(
-    FATAL_ERROR
-      "V4-engine not found. Please clone V4-engine repository to:\n"
-      "  - ${V4_DIR_DOCKER} (Docker build)\n" "  - ${V4_DIR_CI} (CI build)\n"
-      "  - ${V4_DIR_LOCAL} (local build)")
-endif()
-
-# Check V4-hal location
-if(EXISTS "${V4HAL_DIR_DOCKER}/include/v4/hal.h")
-  set(V4HAL_DIR "${V4HAL_DIR_DOCKER}")
-  message(STATUS "Found V4-hal at ${V4HAL_DIR} (Docker location)")
-elseif(EXISTS "${V4HAL_DIR_CI}/include/v4/hal.h")
-  set(V4HAL_DIR "${V4HAL_DIR_CI}")
-  message(STATUS "Found V4-hal at ${V4HAL_DIR} (CI location)")
-elseif(EXISTS "${V4HAL_DIR_LOCAL}/include/v4/hal.h")
-  set(V4HAL_DIR "${V4HAL_DIR_LOCAL}")
-  message(STATUS "Found V4-hal at ${V4HAL_DIR} (local location)")
-else()
-  message(
-    FATAL_ERROR
-      "V4-hal not found. Please clone V4-hal repository to:\n"
-      "  - ${V4HAL_DIR_DOCKER} (Docker build)\n" "  - ${V4HAL_DIR_CI} (CI build)\n"
-      "  - ${V4HAL_DIR_LOCAL} (local build)")
-endif()
-
-# Check V4-link location
-if(EXISTS "${V4LINK_DIR_DOCKER}/include/v4link/link.hpp")
-  set(V4LINK_DIR "${V4LINK_DIR_DOCKER}")
-  message(STATUS "Found V4-link at ${V4LINK_DIR} (Docker location)")
-elseif(EXISTS "${V4LINK_DIR_CI}/include/v4link/link.hpp")
-  set(V4LINK_DIR "${V4LINK_DIR_CI}")
-  message(STATUS "Found V4-link at ${V4LINK_DIR} (CI location)")
-elseif(EXISTS "${V4LINK_DIR_LOCAL}/include/v4link/link.hpp")
-  set(V4LINK_DIR "${V4LINK_DIR_LOCAL}")
-  message(STATUS "Found V4-link at ${V4LINK_DIR} (local location)")
-else()
-  message(
-    FATAL_ERROR
-      "V4-link not found. Please clone V4-link repository to:\n"
-      "  - ${V4LINK_DIR_DOCKER} (Docker build)\n" "  - ${V4LINK_DIR_CI} (CI build)\n"
-      "  - ${V4LINK_DIR_LOCAL} (local build)")
-endif()
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/dependencies.cmake")
+v4_resolve_dependency(V4_DIR V4_ENGINE_PATH V4-engine /v4-engine include/v4/vm_api.h)
+v4_resolve_dependency(V4HAL_DIR V4_HAL_PATH V4-hal /v4-hal include/v4/hal.h)
+v4_resolve_dependency(V4LINK_DIR V4_LINK_PATH V4-link /v4-link include/v4link/link.hpp)
 
 # V4-engine source files (with FreeRTOS task backend)
 set(V4_SRCS

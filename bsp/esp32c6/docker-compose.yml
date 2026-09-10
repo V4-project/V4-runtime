@@ -4,7 +4,6 @@
 services:
   esp-idf:
     image: espressif/idf:v5.5.5
-    container_name: v4-rtos-esp-idf
     volumes:
       # Mount V4-runtime project directory
       - ../../:/project
@@ -14,28 +13,15 @@ services:
       - ../../../V4-hal:/v4-hal:ro
       # Mount V4-link (required for bytecode protocol)
       - ../../../V4-link:/v4-link:ro
-      # Mount V4-std (required for device-independent standard library)
-      - ../../../V4-std:/v4-std:ro
-      # Mount SSH keys for git operations (optional)
-      - ~/.ssh:/root/.ssh:ro
-      # Persistent build cache
-      - esp-idf-cache:/root/.espressif
     environment:
       # Set V4 paths for build system
       - V4_ENGINE_PATH=/v4-engine
       - V4_HAL_PATH=/v4-hal
       - V4_LINK_PATH=/v4-link
-      - V4_STD_PATH=/v4-std
-    working_dir: ${PROJECT_DIR:-/project/bsp/esp32c6/runtime}
+    working_dir: /project/bsp/esp32c6/runtime
     command: /bin/bash
     tty: true
     stdin_open: true
-    # Device access for flashing
-    devices:
-      - ${ESP_DEVICE:-/dev/ttyACM0}:${ESP_DEVICE:-/dev/ttyACM0}
+    # Add docker-compose.device.yml only when flashing/monitoring real hardware.
     privileged: false
     network_mode: bridge
-
-volumes:
-  # Named volume for ESP-IDF cache
-  esp-idf-cache:

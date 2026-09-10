@@ -1,0 +1,5 @@
+# Explicit opt-in for flashing/monitoring; ordinary builds need no serial device.
+services:
+  esp-idf:
+    devices:
+      - ${ESP_DEVICE:-/dev/ttyACM0}:${ESP_DEVICE:-/dev/ttyACM0}

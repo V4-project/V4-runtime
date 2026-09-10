@@ -25,9 +25,23 @@ version for each commit; the release version and date will be finalized together
 - Adopt quiet-logs for new builds: static log levels, no per-tag runtime level changes, and DEBUG-only traffic tracing. Startup INFO, ERROR, task support, standard panic output, SDK, optimization and wireless coexistence settings are retained. Existing sdkconfig/CMake caches require explicit migration; diagnostic settings remain available. Hardware validation remains pending.
 
 ### Fixed
+- Correct native sibling dependency paths and share deterministic dependency
+  resolution across engine/HAL/link, with explicit CMake/environment overrides
+  and actionable errors for invalid paths. CI `_deps` takes precedence over
+  automatic Docker/local fallbacks.
+- Anchor ESP32-C6 Make build paths and the Compose file to the repository instead
+  of the caller's directory. Ordinary Compose builds no longer require a serial
+  device, SSH keys, unused V4-std mount or an SDK-tool cache volume. Flash/monitor
+  device access is opt-in through `docker-compose.device.yml`; the IDF working
+  directory is fixed (legacy `PROJECT_DIR` overrides are no longer used).
 - Preserve arguments of `-u`, `-Xlinker`, entry-point and related linker options in size comparison identity, including response files. Missing required option arguments now fail instead of disappearing from the comparison.
 
 ### Validation
+- Build-path refactoring: 8 host-only path tests (also added to CI), 23 size-tool
+  tests and formatting checks pass. A clean IDF 5.5.5 build and a subsequent
+  device-free Compose build from `/tmp` pass without using developer `.env` files.
+  Application BIN remains 137,568 B, data 3,932 B and BSS 20,072 B with the local
+  HAL UART fix. Hardware flashing and new remote CI runs remain untested.
 - Adoption validation: clean native-default measurement is 137,568 B with 3,932 B data and 20,072 B BSS; diagnostic-logs restores the old 139,408 B / 3,956 B / 20,352 B values. The old 0.4.0 default also builds with the current harness. Strict comparison rejects this configuration transition, while CI reports separate absolute sizes without a delta. Reporter tests pass (23); hardware remains untested.
 - Before default adoption, same-source default/quiet-logs clean builds passed: combined logging changes reduced application BIN by 1,840 B (139,408 to 137,568), static data+BSS by 304 B and DIRAM use by 820 B. Bootloader was unchanged; coexistence, standard panic output and runtime callback/startup/error diagnostics remained linked. That experiment passed 20 reporter tests and formatting checks without hardware testing.
 - Four same-source clean IDF 5.5.5 builds pass: default app 139,408 B; static logs 138,176 B (-1,232), quiet transport 138,800 B (-608), no coexistence 136,960 B (-2,448). Static data+BSS savings are 280/16/392 B respectively; all bootloaders remain 20,576 B. These are separate, non-additive, opt-in feature tradeoffs, not new defaults.

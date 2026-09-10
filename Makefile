@@ -1,6 +1,8 @@
 .PHONY: all build release test clean format format-check asan ubsan esp32c6 size size-build help
 
 SIZE_OUTPUT ?= /tmp/v4-runtime-size
+RUNTIME_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+ESP_COMPOSE := $(RUNTIME_ROOT)/bsp/esp32c6/docker-compose.yml
 
 # Default target
 all: build test
@@ -110,11 +112,11 @@ ifeq ($(DOCKER),1)
 		echo "❌ Docker not found. Please install Docker first."; \
 		exit 1; \
 	fi
-	@docker compose run --rm esp-idf bash -c "git config --global --add safe.directory /project && idf.py build"
+	@docker compose -f "$(ESP_COMPOSE)" run --rm esp-idf idf.py build
 	@echo "✅ ESP32-C6 runtime build complete!"
 	@echo ""
 	@echo "To flash (Docker):"
-	@echo "  docker compose run --rm esp-idf bash -c 'git config --global --add safe.directory /project && idf.py flash monitor'"
+	@echo "  docker compose -f '$(ESP_COMPOSE)' -f '$(RUNTIME_ROOT)/bsp/esp32c6/docker-compose.device.yml' run --rm esp-idf idf.py flash monitor"
 else
 	@echo "📱 Building ESP32-C6 runtime (native)..."
 	@if [ -z "$$IDF_PATH" ]; then \
@@ -123,11 +125,11 @@ else
 		echo "   2. Use Docker: make esp32c6 DOCKER=1"; \
 		exit 1; \
 	fi
-	@cd bsp/esp32c6/runtime && idf.py build
+	@cd "$(RUNTIME_ROOT)/bsp/esp32c6/runtime" && idf.py build
 	@echo "✅ ESP32-C6 runtime build complete!"
 	@echo ""
 	@echo "To flash:"
-	@echo "  cd bsp/esp32c6/runtime && idf.py flash monitor"
+	@echo "  cd '$(RUNTIME_ROOT)/bsp/esp32c6/runtime' && idf.py flash monitor"
 endif
 
 # Show firmware sizes for all BSPs

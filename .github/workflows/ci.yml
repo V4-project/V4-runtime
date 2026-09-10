@@ -23,6 +23,9 @@ jobs:
     - name: Check formatting
       run: make format-check
 
+    - name: Check dependency and build paths without hardware
+      run: python3 -m unittest discover -s tests/build_paths -v
+
   # Detect changes to determine which jobs to run
   changes:
     name: Detect Changes
