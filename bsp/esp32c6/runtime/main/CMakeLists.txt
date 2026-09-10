@@ -152,10 +152,9 @@ if(NOT V4_PANIC_DIAGNOSTICS)
 endif()
 
 # Only traffic tracing is optional; startup and error logging are unchanged.
-option(V4_LINK_VERBOSE_LOGS "Include V4-link INFO traffic logs and hex dumps" ON)
-if(NOT V4_LINK_VERBOSE_LOGS)
-  target_compile_definitions(${COMPONENT_LIB} PRIVATE V4_LINK_VERBOSE_LOGS=0)
-endif()
+option(V4_LINK_VERBOSE_LOGS "Include V4-link INFO traffic logs and hex dumps" OFF)
+target_compile_definitions(${COMPONENT_LIB}
+                           PRIVATE V4_LINK_VERBOSE_LOGS=$<BOOL:${V4_LINK_VERBOSE_LOGS}>)
 
 # C++17 required for V4 and V4-hal
 target_compile_features(${COMPONENT_LIB} PUBLIC cxx_std_17)

@@ -14,7 +14,7 @@
 static const char* TAG = "V4Link";
 
 #ifndef V4_LINK_VERBOSE_LOGS
-#define V4_LINK_VERBOSE_LOGS 1
+#define V4_LINK_VERBOSE_LOGS 0
 #endif
 
 namespace v4rtos

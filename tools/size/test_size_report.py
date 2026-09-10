@@ -11,6 +11,38 @@ import size_report as size
 
 
 class ReporterTests(unittest.TestCase):
+    def test_native_quiet_defaults_and_diagnostic_restore(self):
+        project = size.ROOT / size.PROJECT
+        size.verify_sdkconfig((project / "sdkconfig.defaults").read_text(), size.EXPERIMENTS["quiet-logs"])
+        self.assertIn('option(V4_LINK_VERBOSE_LOGS "Include V4-link INFO traffic logs and hex dumps" OFF)',
+                      (project / "main/CMakeLists.txt").read_text())
+        self.assertIn("diagnostic-logs", size.VERBOSE_TRANSPORT_EXPERIMENTS)
+        self.assertIn("static-logs", size.VERBOSE_TRANSPORT_EXPERIMENTS)
+        self.assertEqual(size.EXPERIMENTS["diagnostic-logs"], size.EXPERIMENTS["quiet-transport"])
+
+    def test_configuration_change_is_reported_without_delta(self):
+        before, after = self.report(), self.report()
+        after["configuration"]["sdk"] = "changed"
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(size.compare(before, after, report_config_change=True), 0)
+        self.assertIn("no comparable delta", output.getvalue())
+        self.assertNotIn("| Delta |", output.getvalue())
+        with self.assertRaisesRegex(ValueError, "budget"):
+            size.compare(before, after, 0, True)
+        after["metrics"] = {}
+        with self.assertRaises(ValueError):
+            size.compare(before, after, report_config_change=True)
+
+    def test_matching_configuration_still_reports_delta_in_ci(self):
+        before, after = self.report(), self.report()
+        after["metrics"]["application_bin"] += 5
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(size.compare(before, after, report_config_change=True), 0)
+        self.assertIn("| Delta |", output.getvalue())
+        self.assertIn("| application_bin | 100 | 105 | +5 |", output.getvalue())
+
     def test_ci_dependency_pins_match_firmware_build(self):
         workflow = size.ROOT / ".github/workflows"
         pins = lambda name: re.findall(r"ref: ([0-9a-f]{40})", (workflow / name).read_text())

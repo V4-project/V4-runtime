@@ -69,7 +69,7 @@ jobs:
         run: |
           python3 runtime/tools/size/size_report.py compare \
             "$RUNNER_TEMP/size-before/results/report.json" \
-            "$RUNNER_TEMP/size-after/results/report.json" >> "$GITHUB_STEP_SUMMARY"
+            "$RUNNER_TEMP/size-after/results/report.json" --report-config-change >> "$GITHUB_STEP_SUMMARY"
       - name: No baseline
         if: steps.baseline.outputs.ref == ''
         run: echo 'No baseline; current measurement only. See report artifact.' >> "$GITHUB_STEP_SUMMARY"
@@ -78,7 +78,7 @@ jobs:
       - name: Measure configuration experiments
         if: inputs.experiments == true
         run: |
-          for profile in static-logs quiet-transport quiet-logs no-coex; do
+          for profile in static-logs quiet-transport quiet-logs diagnostic-logs no-coex; do
             python3 runtime/tools/size/size_report.py build --experiment "$profile" \
               --output "$RUNNER_TEMP/size-experiment-$profile"
           done

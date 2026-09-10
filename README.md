@@ -29,6 +29,13 @@ Use the host CLI's `v4 repl --port /dev/ttyACM0` to enter Forth source.
 
 ## Source map
 
+New ESP32-C6 builds default to static log levels and DEBUG-only V4-link traffic
+tracing (`quiet-logs`). Startup INFO, ERROR, standard panic diagnostics and the
+runtime panic callback remain enabled. Runtime per-tag/log-level changes are no
+longer available by default. Wireless coexistence is unchanged.
+Existing sdkconfig/CMake caches are not migrated automatically. See
+[logging defaults and diagnostic restoration](tools/size/README.md#logging-defaults-and-diagnostic-restoration).
+
 For reproducible ESP32-C6 firmware measurements and before/after comparisons, see
 [firmware size tooling](tools/size/README.md). This builds without hardware and does
 not change runtime feature settings.

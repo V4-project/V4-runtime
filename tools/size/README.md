@@ -1,5 +1,54 @@
 # ESP32-C6 firmware size comparisons
 
+## Logging defaults and diagnostic restoration
+
+New runtime builds now use the measured `quiet-logs` behavior by default. Standard
+panic diagnostics, startup INFO, ERROR and wireless coexistence remain enabled.
+Per-tag/runtime log level adjustment is disabled, and transfer counts/hex dumps
+are DEBUG-only. Other logs still share USB; this is not a log-free protocol channel.
+
+`build --experiment default` follows the checked-out source's defaults, including
+old revisions with verbose defaults. `--experiment diagnostic-logs` explicitly
+restores cache+linked-list dynamic logging and INFO traffic traces for diagnosis.
+`static-logs` explicitly keeps INFO traffic, `quiet-transport` explicitly restores
+dynamic logging, and `quiet-logs` explicitly selects both quiet options. `no-coex`
+only changes coexistence relative to the checked-out defaults (now quiet logging).
+Historical measurements below used the earlier defaults and are not new no-coex
+measurements under the adopted defaults.
+
+```sh
+python3 tools/size/size_report.py build --output /tmp/v4-adopted-default
+python3 tools/size/size_report.py build --experiment diagnostic-logs --output /tmp/v4-diagnostic
+```
+
+Existing developer sdkconfig/CMake caches are **not** automatically migrated or
+overwritten. In `idf.py menuconfig`, select Log output → Log Level → Level Settings:
+tag level checks **None**, dynamic level control **disabled**. Then run
+`idf.py -DV4_LINK_VERBOSE_LOGS=OFF reconfigure` and `idf.py build`.
+For the old diagnostic behavior, select **Cache + Linked List**, dynamic level
+control **enabled**, and reconfigure with `-DV4_LINK_VERBOSE_LOGS=ON` before rebuilding.
+Do not delete or overwrite developer configs to adopt the new defaults. Fresh
+isolated size builds apply the tracked defaults without any manual migration.
+
+Normal `compare` is still strict. CI uses `--report-config-change`: when valid
+reports have different configurations, it names the changed fields and shows
+absolute sizes separately, with **no delta or growth-budget verdict**. Matching
+configurations still get the usual delta. Invalid reports fail. This reporting
+option cannot be combined with `--max-growth`; it does not make differing builds
+comparable. Review both configuration artifacts on default/SDK changes.
+
+Adoption validation (2026-09-10): clean `default` produces 137,568 B application
+BIN, 3,932 B data, 20,072 B BSS and 64,574 B DIRAM use. `diagnostic-logs` restores
+139,408 B / 3,956 B / 20,352 B / 65,394 B respectively; both bootloaders are 20,576 B.
+The restored mode and new default use identical source snapshots. The old 0.4.0
+runtime also builds under the current harness with its old verbose defaults.
+The measured reduction from old logging behavior is 1,840 B application BIN and
+304 B static data+BSS, not a same-configuration code-only improvement.
+Strict comparison rejects old/new defaults; CI's reporting mode shows separate
+absolute sizes and no delta. Twenty-three reporter tests and formatting checks
+pass. Hardware and remote CI execution are still pending. ELF inspection confirms
+startup/error/standard panic output, custom callback and coexistence remain linked.
+
 Python 3.8+, Git and Docker are required. No hardware, serial device, SSH keys or
 network access inside the build container is needed. The host must already have
 the SDK image (`docker pull espressif/idf:v5.5.5`). Dependency repositories default
@@ -79,7 +128,8 @@ The Firmware Size workflow builds base/current with the current harness and the
 same pinned dependencies. Pull requests use their base SHA, pushes use the previous
 SHA, and manual runs take a baseline ref. It publishes a Markdown job summary and
 retains reports, logs and firmware artifacts for 30 days. Growth is report-only;
-incompatible configurations fail visibly rather than producing a misleading delta.
+incompatible configurations are shown separately without a misleading delta when
+CI's explicit configuration-change reporting mode is selected.
 CI also retains a current OFF build as a separate configuration artifact.
 
 ## Standard panic-output opt-out
@@ -138,7 +188,8 @@ diagnostics; baseline/current ON reports pass strict comparison with zero growth
 ## Independent configuration experiments
 
 Use the same source and default panic setting for each run. Select one named
-profile per build; only `quiet-logs` combines the two logging changes:
+profile per build; `quiet-logs` explicitly combines the logging changes, while
+`default` follows the checked-out defaults (now also quiet):
 
 ```sh
 python3 tools/size/size_report.py build --experiment default --output /tmp/v4-config-default
@@ -236,8 +287,8 @@ retaining `coex_pre_init`, the standard panic banner, runtime panic callback,
 startup INFO and error messages. Runtime log level/tag adjustment is unavailable,
 and binary transport is still not guaranteed free of other logs. Cross-profile
 comparison is rejected as expected. Twenty reporter tests and formatting checks
-pass. Hardware behavior and adoption as default remain unvalidated; no normal
-firmware defaults were changed.
+pass. This was the pre-adoption experiment; it did not change normal firmware
+defaults or validate hardware. Current default adoption is documented above.
 
 ```sh
 python3 -m unittest discover -s tools/size -v

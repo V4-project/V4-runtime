@@ -21,12 +21,16 @@ EXPERIMENTS = {
     "default": {},
     "static-logs": {"CONFIG_LOG_TAG_LEVEL_IMPL_NONE": "y",
                     "CONFIG_LOG_DYNAMIC_LEVEL_CONTROL": "n"},
-    "quiet-transport": {},
+    "quiet-transport": {"CONFIG_LOG_TAG_LEVEL_IMPL_CACHE_AND_LINKED_LIST": "y",
+                        "CONFIG_LOG_DYNAMIC_LEVEL_CONTROL": "y"},
+    "diagnostic-logs": {"CONFIG_LOG_TAG_LEVEL_IMPL_CACHE_AND_LINKED_LIST": "y",
+                        "CONFIG_LOG_DYNAMIC_LEVEL_CONTROL": "y"},
     "quiet-logs": {"CONFIG_LOG_TAG_LEVEL_IMPL_NONE": "y",
                    "CONFIG_LOG_DYNAMIC_LEVEL_CONTROL": "n"},
     "no-coex": {"CONFIG_ESP_COEX_SW_COEXIST_ENABLE": "n"},
 }
 QUIET_TRANSPORT_EXPERIMENTS = ("quiet-transport", "quiet-logs")
+VERBOSE_TRANSPORT_EXPERIMENTS = ("static-logs", "diagnostic-logs")
 
 
 def run(args, cwd=None):
@@ -159,6 +163,8 @@ def collect():
         configure += ["-DSDKCONFIG_DEFAULTS=sdkconfig.defaults;size-sdkconfig.defaults"]
     if experiment in QUIET_TRANSPORT_EXPERIMENTS:
         configure += ["-DV4_LINK_VERBOSE_LOGS=OFF"]
+    elif experiment in VERBOSE_TRANSPORT_EXPERIMENTS:
+        configure += ["-DV4_LINK_VERBOSE_LOGS=ON"]
     subprocess.run(configure + ["reconfigure"], check=True)
     verify_sdkconfig((project / "sdkconfig").read_text(), expected)
     subprocess.run(["ninja", "-C", "build", "-j", os.environ["V4_SIZE_JOBS"]], check=True)
@@ -174,14 +180,20 @@ def collect():
     macros = run(panic_preprocessor_command(panic_commands[0]))
     verify_panic_macros(macros, panic)
     (output / "panic-macros.txt").write_text(macros + "\n")
-    if experiment in QUIET_TRANSPORT_EXPERIMENTS:
-        transport = [c["command"] for c in commands if c["file"].endswith("/main/v4_link_port.cpp")]
-        if len(transport) != 1:
-            raise ValueError("could not identify runtime transport compilation")
-        transport_macros = run(panic_preprocessor_command(transport[0]))
-        if "#define V4_LINK_VERBOSE_LOGS 0" not in transport_macros.splitlines():
-            raise ValueError("quiet transport did not reach the compiler")
-        (output / "transport-macros.txt").write_text(transport_macros + "\n")
+    transport = [c["command"] for c in commands if c["file"].endswith("/main/v4_link_port.cpp")]
+    if len(transport) != 1:
+        raise ValueError("could not identify runtime transport compilation")
+    transport_macros = run(panic_preprocessor_command(transport[0]))
+    values = [line.rsplit(" ", 1)[-1] for line in transport_macros.splitlines()
+              if line.startswith("#define V4_LINK_VERBOSE_LOGS ")]
+    # Revisions predating the option print INFO traffic unconditionally.
+    verbose = values[0] if len(values) == 1 else "1" if not values else "invalid"
+    if verbose not in ("0", "1"):
+        raise ValueError("invalid transport logging macro")
+    if ((experiment in QUIET_TRANSPORT_EXPERIMENTS and verbose != "0") or
+            (experiment in VERBOSE_TRANSPORT_EXPERIMENTS and verbose != "1")):
+        raise ValueError("transport logging request did not reach the compiler")
+    (output / "transport-macros.txt").write_text(transport_macros + "\n")
     ninja_commands = run(["ninja", "-C", "build", "-t", "commands"])
     (output / "build-commands.txt").write_text(ninja_commands + "\n")
     link_commands = [c for c in ninja_commands.splitlines() if " -o v4-runtime.elf " in c]
@@ -203,6 +215,7 @@ def collect():
               "target": "esp32c6", "profile": "tracked-runtime-defaults",
               "panic_diagnostics": panic,
               "experiment": experiment,
+              "transport_verbose": verbose == "1",
               "sdk": run(["idf.py", "--version"]),
               "compiler": run(["riscv32-esp-elf-gcc", "--version"]),
               "size_tool": run([sys.executable, "-c",
@@ -270,7 +283,9 @@ def build(args):
     print("Report: " + str(results / "report.json"))
 
 
-def compare(before, after, max_growth=None):
+def compare(before, after, max_growth=None, report_config_change=False):
+    if report_config_change and max_growth is not None:
+        raise ValueError("configuration-change reporting cannot enforce a growth budget")
     for report in (before, after):
         if report.get("schema") != 1 or not report.get("configuration"):
             raise ValueError("unsupported or missing report schema/configuration")
@@ -281,6 +296,13 @@ def compare(before, after, max_growth=None):
     if before["configuration"] != after["configuration"]:
         keys = sorted(k for k in set(before["configuration"]) | set(after["configuration"])
                       if before["configuration"].get(k) != after["configuration"].get(k))
+        if report_config_change:
+            print("Configuration changed; no comparable delta or budget verdict.\n")
+            print("Changed fields: " + ", ".join(keys) + "\n")
+            print("| Metric (bytes) | Before (own config) | After (own config) |\n|---|---:|---:|")
+            for key in METRICS:
+                print("| {} | {} | {} |".format(key, before["metrics"][key], after["metrics"][key]))
+            return 0
         raise ValueError("incompatible configuration: " + ", ".join(keys))
     print("| Metric (bytes) | Before | After | Delta |\n|---|---:|---:|---:|")
     for key in METRICS:
@@ -306,6 +328,7 @@ def main():
     p.add_argument("before", type=Path)
     p.add_argument("after", type=Path)
     p.add_argument("--max-growth", type=int)
+    p.add_argument("--report-config-change", action="store_true")
     sub.add_parser("_collect", help=argparse.SUPPRESS)
     args = parser.parse_args()
     try:
@@ -317,7 +340,7 @@ def main():
             collect()
         else:
             return compare(json.loads(args.before.read_text()), json.loads(args.after.read_text()),
-                           args.max_growth)
+                           args.max_growth, args.report_config_change)
         return 0
     except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
         print("error: " + str(error), file=sys.stderr)
