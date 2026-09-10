@@ -17,6 +17,13 @@ PROJECT = Path("bsp/esp32c6/runtime")
 IMAGE = "espressif/idf:v5.5.5"
 METRICS = ("application_bin", "bootloader_bin", "diram_data", "diram_bss",
            "used_diram", "flash_code", "flash_rodata", "total_size")
+EXPERIMENTS = {
+    "default": {},
+    "static-logs": {"CONFIG_LOG_TAG_LEVEL_IMPL_NONE": "y",
+                    "CONFIG_LOG_DYNAMIC_LEVEL_CONTROL": "n"},
+    "quiet-transport": {},
+    "no-coex": {"CONFIG_ESP_COEX_SW_COEXIST_ENABLE": "n"},
+}
 
 
 def run(args, cwd=None):
@@ -86,8 +93,12 @@ def option_profiles(commands, responses=None):
             elif token.startswith(("-DPROJECT_VER=", "-DV4_RUNTIME_VERSION=")):
                 continue
             elif token in ("-D", "-U", "-I", "-isystem", "-include", "-T", "-L",
-                           "-isysroot", "--sysroot"):
-                argument = next(tokens)
+                           "-isysroot", "--sysroot", "-u", "--undefined", "-e",
+                           "--entry", "-Xlinker", "-z", "-l", "--defsym", "--wrap",
+                           "--version-script", "-Wl,-u", "-Wl,--undefined"):
+                argument = next(tokens, None)
+                if argument is None:
+                    raise ValueError("missing argument for " + token)
                 if token == "-D" and argument.startswith(("PROJECT_VER=", "V4_RUNTIME_VERSION=")):
                     continue
                 options.extend((token, argument))
@@ -115,14 +126,38 @@ def verify_panic_macros(macros, requested):
         raise ValueError("requested panic diagnostics did not reach the engine compiler")
 
 
+def verify_sdkconfig(content, expected):
+    values = {}
+    for line in content.splitlines():
+        if line.startswith("CONFIG_") and "=" in line:
+            key, value = line.split("=", 1)
+            values[key] = value
+        elif line.startswith("# CONFIG_") and line.endswith(" is not set"):
+            values[line[2:-11]] = "n"
+    for key, value in expected.items():
+        if values.get(key) != value:
+            raise ValueError("experiment setting not effective: " + key)
+
+
 def collect():
     """Internal command, executed only in the controlled build container."""
     project = Path("/project") / PROJECT
     build = project / "build"
     os.chdir(project)
     panic = os.environ["V4_SIZE_PANIC_DIAGNOSTICS"]
-    subprocess.run(["idf.py", "-B", "build", "-DV4_PANIC_DIAGNOSTICS=" + panic.upper(),
-                    "reconfigure"], check=True)
+    experiment = os.environ["V4_SIZE_EXPERIMENT"]
+    expected = EXPERIMENTS[experiment]
+    configure = ["idf.py", "-B", "build", "-DV4_PANIC_DIAGNOSTICS=" + panic.upper()]
+    if expected:
+        overlay = project / "size-sdkconfig.defaults"
+        if overlay.exists():
+            raise ValueError("experiment overlay path already exists")
+        overlay.write_text("".join(k + "=" + v + "\n" for k, v in expected.items()))
+        configure += ["-DSDKCONFIG_DEFAULTS=sdkconfig.defaults;size-sdkconfig.defaults"]
+    if experiment == "quiet-transport":
+        configure += ["-DV4_LINK_VERBOSE_LOGS=OFF"]
+    subprocess.run(configure + ["reconfigure"], check=True)
+    verify_sdkconfig((project / "sdkconfig").read_text(), expected)
     subprocess.run(["ninja", "-C", "build", "-j", os.environ["V4_SIZE_JOBS"]], check=True)
     subprocess.run(["idf.py", "-B", "build", "size"], check=True)
     output = Path("/results")
@@ -136,6 +171,14 @@ def collect():
     macros = run(panic_preprocessor_command(panic_commands[0]))
     verify_panic_macros(macros, panic)
     (output / "panic-macros.txt").write_text(macros + "\n")
+    if experiment == "quiet-transport":
+        transport = [c["command"] for c in commands if c["file"].endswith("/main/v4_link_port.cpp")]
+        if len(transport) != 1:
+            raise ValueError("could not identify runtime transport compilation")
+        transport_macros = run(panic_preprocessor_command(transport[0]))
+        if "#define V4_LINK_VERBOSE_LOGS 0" not in transport_macros.splitlines():
+            raise ValueError("quiet transport did not reach the compiler")
+        (output / "transport-macros.txt").write_text(transport_macros + "\n")
     ninja_commands = run(["ninja", "-C", "build", "-t", "commands"])
     (output / "build-commands.txt").write_text(ninja_commands + "\n")
     link_commands = [c for c in ninja_commands.splitlines() if " -o v4-runtime.elf " in c]
@@ -156,6 +199,7 @@ def collect():
     config = {"image_id": metadata["image_id"], "harness_sha256": sha(__file__),
               "target": "esp32c6", "profile": "tracked-runtime-defaults",
               "panic_diagnostics": panic,
+              "experiment": experiment,
               "sdk": run(["idf.py", "--version"]),
               "compiler": run(["riscv32-esp-elf-gcc", "--version"]),
               "size_tool": run([sys.executable, "-c",
@@ -205,7 +249,8 @@ def build(args):
     command = ["docker", "run", "--rm", "--network", "none", "--cpus", str(args.jobs),
                "--user", str(os.getuid()) + ":" + str(os.getgid()),
                "-e", "V4_SIZE_JOBS=" + str(args.jobs),
-               "-e", "V4_SIZE_PANIC_DIAGNOSTICS=" + args.panic_diagnostics]
+               "-e", "V4_SIZE_PANIC_DIAGNOSTICS=" + args.panic_diagnostics,
+               "-e", "V4_SIZE_EXPERIMENT=" + args.experiment]
     mounts = [(output / "sources/runtime", "/project", False),
               (results, "/results", False), (output / "harness.py", "/harness.py", True)]
     mounts += [(output / "sources" / name, "/v4-" + name, True)
@@ -252,6 +297,7 @@ def main():
     p.add_argument("--image", default=IMAGE)
     p.add_argument("--jobs", type=int, default=4)
     p.add_argument("--panic-diagnostics", choices=("on", "off"), default="on")
+    p.add_argument("--experiment", choices=tuple(EXPERIMENTS), default="default")
     p.add_argument("--output", type=Path, required=True)
     p = sub.add_parser("compare")
     p.add_argument("before", type=Path)

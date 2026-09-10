@@ -13,6 +13,10 @@
 
 static const char* TAG = "V4Link";
 
+#ifndef V4_LINK_VERBOSE_LOGS
+#define V4_LINK_VERBOSE_LOGS 1
+#endif
+
 namespace v4rtos
 {
 
@@ -21,8 +25,13 @@ static void usb_serial_jtag_write_callback(void* user, const uint8_t* data, size
 {
   (void)user;  // Unused
 
+#if V4_LINK_VERBOSE_LOGS
   ESP_LOGI(TAG, "Sending %d bytes", len);
   ESP_LOG_BUFFER_HEX(TAG, data, len);
+#else
+  ESP_LOGD(TAG, "Sending %d bytes", len);
+  ESP_LOG_BUFFER_HEX_LEVEL(TAG, data, len, ESP_LOG_DEBUG);
+#endif
 
   // Send response data over USB Serial/JTAG
   int written = usb_serial_jtag_write_bytes((const char*)data, len, portMAX_DELAY);
@@ -32,7 +41,11 @@ static void usb_serial_jtag_write_callback(void* user, const uint8_t* data, size
   }
   else
   {
+#if V4_LINK_VERBOSE_LOGS
     ESP_LOGI(TAG, "Successfully wrote %d bytes", written);
+#else
+    ESP_LOGD(TAG, "Successfully wrote %d bytes", written);
+#endif
   }
 }
 
@@ -82,8 +95,13 @@ void Esp32c6LinkPort::poll()
 
   if (len > 0)
   {
+#if V4_LINK_VERBOSE_LOGS
     ESP_LOGI(TAG, "Received %d bytes", len);
     ESP_LOG_BUFFER_HEX(TAG, buffer, len);
+#else
+    ESP_LOGD(TAG, "Received %d bytes", len);
+    ESP_LOG_BUFFER_HEX_LEVEL(TAG, buffer, len, ESP_LOG_DEBUG);
+#endif
 
     // Feed received bytes to V4-link
     for (int i = 0; i < len; ++i)

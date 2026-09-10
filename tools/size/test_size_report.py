@@ -90,6 +90,52 @@ class ReporterTests(unittest.TestCase):
         self.assertEqual(size.panic_preprocessor_command('cc -Os -o out.obj -c "/src/panic.cpp"'),
                          ["cc", "-Os", "/src/panic.cpp", "-dM", "-E"])
 
+    def test_linker_option_arguments(self):
+        for option in ("-u", "--undefined", "-e", "--entry", "-Xlinker", "-Wl,-u",
+                       "-Wl,--undefined", "--wrap", "--defsym", "--version-script", "-z", "-l"):
+            with self.subTest(option=option):
+                self.assertNotEqual(size.option_profiles(["cc " + option + " first"]),
+                                    size.option_profiles(["cc " + option + " second"]))
+                with self.assertRaisesRegex(ValueError, "missing argument"):
+                    size.option_profiles(["cc " + option])
+        self.assertNotEqual(size.option_profiles(["cc -Xlinker -u -Xlinker first"]),
+                            size.option_profiles(["cc -Xlinker -u -Xlinker second"]))
+
+    def test_linker_response_arguments(self):
+        with tempfile.TemporaryDirectory() as temp:
+            response = Path(temp) / "linkflags"
+            response.write_text("-u first")
+            before = size.option_profiles(["cc @" + str(response)])
+            response.write_text("-u second")
+            self.assertNotEqual(before, size.option_profiles(["cc @" + str(response)]))
+
+    def test_changed_forced_symbol_rejects_report_comparison(self):
+        before = self.report()
+        after = self.report()
+        before["configuration"]["link_options"] = size.option_profiles(["cc -u first"])
+        after["configuration"]["link_options"] = size.option_profiles(["cc -u second"])
+        with self.assertRaisesRegex(ValueError, "link_options"):
+            self.compare(before, after)
+        self.assertNotEqual(size.option_profiles(["cc -Wl,-u,first"]),
+                            size.option_profiles(["cc -Wl,-u,second"]))
+
+    def test_effective_experiment_config(self):
+        size.verify_sdkconfig("CONFIG_A=y\n# CONFIG_B is not set\n", {"CONFIG_A": "y", "CONFIG_B": "n"})
+        for content in ("CONFIG_A=y", "", "# CONFIG_B is not set"):
+            with self.subTest(content=content), self.assertRaisesRegex(ValueError, "not effective"):
+                size.verify_sdkconfig(content, {"CONFIG_A": "n"})
+
+    def test_experiments_are_mutually_exclusive(self):
+        self.assertEqual(size.EXPERIMENTS["static-logs"],
+                         {"CONFIG_LOG_TAG_LEVEL_IMPL_NONE": "y", "CONFIG_LOG_DYNAMIC_LEVEL_CONTROL": "n"})
+        self.assertEqual(size.EXPERIMENTS["no-coex"], {"CONFIG_ESP_COEX_SW_COEXIST_ENABLE": "n"})
+        before = self.report()
+        after = self.report()
+        before["configuration"]["experiment"] = "default"
+        after["configuration"]["experiment"] = "quiet-transport"
+        with self.assertRaisesRegex(ValueError, "incompatible"):
+            self.compare(before, after)
+
     def test_panic_compiler_verification(self):
         size.verify_panic_macros("#define V4_PANIC_DIAGNOSTICS 1\n", "on")
         size.verify_panic_macros("#define V4_PANIC_DIAGNOSTICS 0\n", "off")
