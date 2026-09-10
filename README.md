@@ -1,167 +1,79 @@
 # V4 Runtime
 
-**Embedded Forth Runtime Environment**
+FreeRTOS-based runtime integrating V4-engine, V4-link and V4-hal on ESP32-C6 / M5Stack NanoC6.
+It replaces the deprecated V4-ports implementation.
 
-[![CI](https://github.com/V4-project/V4-runtime/workflows/CI/badge.svg)](https://github.com/V4-project/V4-runtime/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+Status checked against local source on 2026-09-10. Historical hardware demonstrations are not a validation of the current checkout.
 
-V4 Runtime is a lightweight Forth runtime environment built on FreeRTOS for resource-constrained microcontrollers, featuring interactive Forth development and multitasking capabilities.
+## Current execution path
 
-## Features
+```text
+Host:   v4_cli → V4-front → bytecode
+                             ↓ USB Serial/JTAG, V4-link frames
+Device: runtime main → V4-link → V4-engine / FreeRTOS
+```
 
-### Core (Required)
+The current firmware polls for binary V4-link frames. It does not include V4-front or an on-device text REPL.
+Use the host CLI's `v4 repl --port /dev/ttyACM0` to enter Forth source.
 
-- **FreeRTOS Backend** - Leverages proven FreeRTOS scheduler for multitasking
-- **V4 VM Integration** - Forth bytecode execution with task support
-- **Message Passing** - Inter-task communication with 16-message queue
-- **Hardware Abstraction** - Unified HAL across platforms
+## Implemented and incomplete parts
 
-### Optional Components
+- VM initialization, FreeRTOS task backend, board initialization and V4-link reception are present.
+- The panic handler provides ESP logging, LED indication and a halt loop.
+- V4-std initialization, NanoC6 DDT provider and LED HAL build integration are commented out.
+- RGB LED driver sources exist, but their build entries and initialization are commented out.
+- The current engine requires a global `v4_register_sys_handler()` callback for SYS calls. This runtime does not register it yet.
+  Linking V4-hal alone does not connect SYS to GPIO or timers.
+- Examples using GPIO-WRITE, DELAY or string-output words require work before they can run with the current compiler/library.
+- OTA, JIT and additional MCU support remain plans.
 
-- **Interactive REPL** - Live Forth programming on device (via V4 VM)
-- **V4-link Protocol** - Bytecode transfer over USB Serial/JTAG
-- **OTA Updates** - Remote bytecode deployment (planned)
-- **JIT Compilation** - Runtime optimization (planned)
+## Source map
 
-## Quick Start (10 minutes)
+| Location | Purpose |
+|---|---|
+| [runtime/main/main.cpp](bsp/esp32c6/runtime/main/main.cpp) | Startup and V4-link polling |
+| [runtime/main/CMakeLists.txt](bsp/esp32c6/runtime/main/CMakeLists.txt) | Direct compilation of engine, hal and link sources |
+| [runtime/main/v4_link_port.cpp](bsp/esp32c6/runtime/main/v4_link_port.cpp) | USB Serial/JTAG transport |
+| [runtime/main/panic_handler.cpp](bsp/esp32c6/runtime/main/panic_handler.cpp) | Panic diagnostics |
+| [boards/nanoc6](bsp/esp32c6/boards/nanoc6/) | Board setup and DDT provider |
+| [hal_esp32](bsp/esp32c6/hal_esp32/) | LED HAL and RGB LED sources |
+| [docker-compose.yml](bsp/esp32c6/docker-compose.yml) | ESP-IDF v5.3 development environment |
 
-### Prerequisites
-- ESP32-C6 board (M5Stack NanoC6 or similar)
-- ESP-IDF v5.1+ installed and sourced (`. $HOME/esp/esp-idf/export.sh`)
-- USB cable
+The ESP-IDF main component directly includes `task_backend_freertos.cpp`; it does not select CUSTOM.
 
-### Option 1: V4 REPL Runtime (Interactive Forth)
+## Build and device workflow
+
+The Compose definition mounts sibling V4-engine, V4-hal and V4-link repositories at the paths used by the main component:
 
 ```bash
-# Navigate to V4-runtime (if in V4-project workspace)
-cd V4-runtime/bsp/esp32c6/runtime
-
-# Build and flash
-idf.py build flash monitor
-
-# Expected output:
-# V4 Runtime initialized
-# V4 REPL ready
-# v4>
-```
-
-You can now type Forth commands interactively!
-
-### Option 2: Hello RTOS Example (Task Demo)
-
-```bash
-# Navigate to example
-cd bsp/esp32c6/examples/nanoc6/hello-rtos
-
-# Build and flash
-idf.py build flash monitor
-
-# Expected output:
-# [Task 1] Hello from task 1!
-# [Task 2] Hello from task 2!
-```
-
-See [Getting Started Guide](docs/getting-started.md) for detailed instructions.
-
-## Architecture
-
-```
-V4 Runtime
-├── bsp/         Board support packages (ESP32-C6 runtime)
-│   └── esp32c6/
-│       ├── runtime/     Main V4 runtime application
-│       ├── boards/      Board-specific configurations (NanoC6, DevKit)
-│       ├── hal_integration/  V4-hal integration layer
-│       └── linker/      Linker scripts
-├── hal/         V4-hal CMake integration
-├── tools/       Development tools and Forth examples
-├── scripts/     Build and flash helper scripts
-└── docs/        Documentation
-```
-
-**Runtime Size**: ~64KB (V4 VM + FreeRTOS + HAL + V4-link)
-**RAM Usage**: ~16KB base + per-task stacks
-
-## Supported Platforms
-
-| Platform | Status | MCU | Arch | RAM | Flash |
-|----------|--------|-----|------|-----|-------|
-| **ESP32-C6** | Stable | ESP32-C6 | RISC-V 32 | 512KB | 4MB |
-| ESP32-S3 | Planned | ESP32-S3 | Xtensa LX7 | 512KB | 8MB |
-| CH32V203 | Planned | CH32V203 | RISC-V 32 | 20KB | 64KB |
-| RP2350 | Planned | RP2350 | ARM + RISC-V | 520KB | 4MB |
-
-## Comparison with Other Forth Environments
-
-| Feature | V4 Runtime | Mecrisp | Zeptoforth | FlashForth |
-|---------|------------|---------|------------|------------|
-| **Backend** | FreeRTOS | Bare metal | FreeRTOS | Bare metal |
-| **Scheduler** | Preemptive | Cooperative | Preemptive | Cooperative |
-| **VM** | Yes | No | No | No |
-| **REPL** | Yes | Yes | Yes | Yes |
-| **Flash** | 64KB~ | 16KB~ | 32KB~ | 8KB~ |
-| **Multitasking** | FreeRTOS tasks | None | FreeRTOS tasks | Cooperative |
-| **OTA** | Planned | Manual | Manual | Manual |
-| **JIT** | Planned | No | No | No |
-
-**V4 Runtime Advantages:**
-- Leverages proven FreeRTOS for robust multitasking
-- Interactive development without reflashing
-- Designed for hot-swapping and live updates
-- Unified VM/REPL/runtime integration
-- Bytecode-based for portability and dynamic loading
-
-## Documentation
-
-- [Getting Started](docs/getting-started.md) - 10-minute tutorial
-- [Architecture](docs/architecture.md) - System design overview
-- [API Reference](docs/api-reference/) - Complete API documentation
-- [Porting Guide](docs/porting-guide.md) - Adding new platforms
-- [Building Guide](docs/building.md) - Build system reference
-
-## Building
-
-```bash
-# Build all components
-make build
-
-# Run tests
-make test
-
-# Format code
-make format
-
-# Build ESP32-C6 examples
-cd bsp/esp32c6/examples/nanoc6/hello-rtos
+cd bsp/esp32c6
+docker compose run --rm esp-idf
+# Inside the container, at the default runtime working directory:
 idf.py build
 ```
 
-See [Building Guide](docs/building.md) for detailed instructions.
+Compose expects a serial device (default /dev/ttyACM0). PROJECT_DIR and ESP_DEVICE can change the working directory and device.
+Inspect local configuration before use.
 
-## Components
+Native builds currently have a path mismatch: the main component's local fallback resolves to
+V4-runtime/V4-engine (and similarly for hal/link), not the sibling repositories in the workspace.
+It also searches runtime/_deps and the container mount paths. Prepare a supported layout or fix the build paths before relying on native `idf.py build`.
 
-- **[bsp/esp32c6/runtime/](bsp/esp32c6/runtime/)** - Main runtime application (V4 VM + FreeRTOS)
-- **[bsp/esp32c6/boards/](bsp/esp32c6/boards/)** - Board configurations (NanoC6, DevKit)
-- **[hal/](hal/)** - V4-hal CMake integration
-- **[tools/examples/](tools/examples/)** - Forth example programs
-- **[docs/](docs/)** - Documentation and API reference
-- **[scripts/](scripts/)** - Build and flash helper scripts
+After a successful build, flash the intended board:
 
-## Contributing
+```bash
+idf.py -p /dev/ttyACM0 flash
+```
 
-Contributions are welcome! Currently in active development - please open an issue to discuss before submitting pull requests.
+On the host, with the serial monitor closed:
 
-## License
+```bash
+v4 ping --port /dev/ttyACM0
+v4 repl --port /dev/ttyACM0
+v4 push app.v4b --port /dev/ttyACM0
+```
 
-Dual-licensed under:
-- MIT License ([LICENSE-MIT](LICENSE-MIT))
-- Apache License 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
+The receiver is initialized with a 512-byte buffer setting. Arbitrary-size or chunked deployment is not established by this workflow.
+Flash/RAM totals must be measured for the selected build; earlier estimates are not current guarantees.
 
-Choose either license for your use.
-
-## Links
-
-- [Documentation](docs/)
-- [Issue Tracker](https://github.com/V4-project/V4-runtime/issues)
-- [Discussions](https://github.com/V4-project/V4-runtime/discussions)
+See [CLAUDE.md](CLAUDE.md) for maintenance notes. Older detailed guides and examples may describe the pre-migration design.

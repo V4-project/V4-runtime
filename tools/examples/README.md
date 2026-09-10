@@ -1,5 +1,7 @@
 # Forth Application Examples
 
+> Migration status (2026-09-10): the examples below describe intended behavior, not currently runnable programs. GPIO-PIN, GPIO-WRITE, DELAY and string-output words are not provided by the current compiler/standard library. The runtime's new SYS handler connection is also incomplete. See [the runtime README](../../README.md) for the current host CLI workflow; the legacy v4c/v4flash instructions below are historical.
+
 Forth source code examples that run on V4 RTOS.
 
 ## Usage

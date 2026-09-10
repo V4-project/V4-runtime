@@ -1,5 +1,7 @@
 # V4 RTOS Runtime for ESP32-C6
 
+> This detailed guide describes the earlier runtime workflow. For the current source state (2026-09-10), use [the runtime README](../../../README.md): this build receives binary V4-link frames, SYS/V4-std integration is incomplete, and native sibling dependency lookup needs correction. The build/flash examples below are not validation of the current checkout.
+
 This is the V4 RTOS runtime application that runs on ESP32-C6 (M5Stack NanoC6).
 
 ## Purpose
