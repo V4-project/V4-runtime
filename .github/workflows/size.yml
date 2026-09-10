@@ -1,0 +1,79 @@
+name: Firmware Size
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: Runtime baseline ref
+        default: '26ccaaa2867e500110750ea785538556ccfbed45'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  size:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: runtime
+      - name: Reporter tests
+        run: python3 -m unittest discover -s runtime/tools/size -v
+      - uses: actions/checkout@v4
+        with:
+          repository: V4-project/V4-engine
+          ref: a7eb42611170091c72b7a17799b57c13f62fa6d1
+          path: V4-engine
+      - uses: actions/checkout@v4
+        with:
+          repository: V4-project/V4-hal
+          ref: d36a55ac4782eed526c03afde9236c53f5bc84fa
+          path: V4-hal
+      - uses: actions/checkout@v4
+        with:
+          repository: V4-project/V4-link
+          ref: d155eefabda98ca6716cbe0f81dd8e602d41c990
+          path: V4-link
+      - name: Resolve baseline
+        id: baseline
+        env:
+          BASE: ${{ inputs.baseline || github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
+            echo "ref=$BASE" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.baseline.outputs.ref != ''
+        with:
+          ref: ${{ steps.baseline.outputs.ref }}
+          path: baseline-runtime
+      - name: Pull SDK
+        run: docker pull espressif/idf:v5.5.5
+      - name: Build baseline
+        if: steps.baseline.outputs.ref != ''
+        run: python3 runtime/tools/size/size_report.py build --source baseline-runtime --output "$RUNNER_TEMP/size-before"
+      - name: Build current
+        run: python3 runtime/tools/size/size_report.py build --output "$RUNNER_TEMP/size-after"
+      - name: Compare
+        if: steps.baseline.outputs.ref != ''
+        run: |
+          python3 runtime/tools/size/size_report.py compare \
+            "$RUNNER_TEMP/size-before/results/report.json" \
+            "$RUNNER_TEMP/size-after/results/report.json" >> "$GITHUB_STEP_SUMMARY"
+      - name: No baseline
+        if: steps.baseline.outputs.ref == ''
+        run: echo 'No baseline; current measurement only. See report artifact.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: esp32c6-size
+          path: |
+            ${{ runner.temp }}/size-*/results/
+            ${{ runner.temp }}/size-*/build.log
+          retention-days: 30

@@ -1,7 +1,12 @@
-.PHONY: all build release test clean format format-check asan ubsan esp32c6 size help
+.PHONY: all build release test clean format format-check asan ubsan esp32c6 size size-build help
+
+SIZE_OUTPUT ?= /tmp/v4-runtime-size
 
 # Default target
 all: build test
+
+size-build:
+	python3 tools/size/size_report.py build --output "$(SIZE_OUTPUT)"
 
 help:
 	@echo "V4 RTOS Build System"
@@ -17,6 +22,7 @@ help:
 	@echo "  ubsan         - Build and test with UndefinedBehaviorSanitizer"
 	@echo "  esp32c6       - Build ESP32-C6 runtime"
 	@echo "  size          - Show firmware sizes for all BSPs"
+	@echo "  size-build    - Clean Docker measurement (SIZE_OUTPUT must be empty)"
 	@echo ""
 	@echo "Variables:"
 	@echo "  DOCKER=1      - Use Docker for ESP32-C6 build"

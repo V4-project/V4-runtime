@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Development version: 0.5.0. Changes are accumulated here without bumping the
+version for each commit; the release version and date will be finalized together.
+
+### Added
+- Isolated ESP32-C6 Docker size builds from tracked working-tree snapshots, without hardware, developer configs or container network access.
+- JSON firmware/IDF memory reports, retained ELF/map/configuration/command evidence, strict same-configuration comparison and optional application-image growth budgets.
+- Firmware Size CI base/current comparisons using the current harness and pinned dependencies, reporter tests and 30-day artifacts; `make size-build` entry point.
+
+### Compatibility
+- Measurement tooling only: no task, panic-output, SDK or optimization setting changes. Hardware validation remains pending.
+
+### Validation
+- Two clean IDF 5.5.5 builds (0.4.0 baseline and 0.5.0 working tree) pass with the same harness and dependencies; strict comparison passes with a zero-byte growth budget. Application 139,408 B, bootloader 20,576 B and IDF DIRAM use 65,394 B are unchanged.
+- 12 reporter tests and formatting checks pass locally. The new GitHub workflow has not yet been run remotely.
+
 ## [0.4.0] - 2026-09-10
 
 ### Changed

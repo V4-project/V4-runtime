@@ -29,6 +29,10 @@ Use the host CLI's `v4 repl --port /dev/ttyACM0` to enter Forth source.
 
 ## Source map
 
+For reproducible ESP32-C6 firmware measurements and before/after comparisons, see
+[firmware size tooling](tools/size/README.md). This builds without hardware and does
+not change runtime feature settings.
+
 | Location | Purpose |
 |---|---|
 | [runtime/main/main.cpp](bsp/esp32c6/runtime/main/main.cpp) | Startup and V4-link polling |
