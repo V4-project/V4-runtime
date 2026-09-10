@@ -12,7 +12,7 @@ jobs:
     name: Format Check
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Install dependencies
       run: |
@@ -35,8 +35,8 @@ jobs:
     outputs:
       esp32c6: ${{ steps.filter.outputs.esp32c6 }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -56,24 +56,24 @@ jobs:
         board: [nanoc6]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Checkout tested V4-engine dependency
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: V4-project/V4-engine
         ref: a7eb42611170091c72b7a17799b57c13f62fa6d1
         path: bsp/esp32c6/runtime/_deps/V4-engine
 
     - name: Checkout tested V4-hal dependency
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: V4-project/V4-hal
-        ref: 12496236bd5cfa2cd3c5507f2aa88290a66d2f84
+        ref: 01fa2b3acf2b24fb9cf898b0916e3719871dbe3f
         path: bsp/esp32c6/runtime/_deps/V4-hal
 
     - name: Checkout tested V4-link dependency
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: V4-project/V4-link
         ref: d155eefabda98ca6716cbe0f81dd8e602d41c990
@@ -87,7 +87,7 @@ jobs:
         path: 'bsp/esp32c6/runtime'
 
     - name: Archive firmware
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: esp32c6-${{ matrix.board }}-firmware
         path: |

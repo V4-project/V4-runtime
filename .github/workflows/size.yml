@@ -24,22 +24,22 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: runtime
       - name: Reporter tests
         run: python3 -m unittest discover -s runtime/tools/size -v
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: V4-project/V4-engine
           ref: a7eb42611170091c72b7a17799b57c13f62fa6d1
           path: V4-engine
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: V4-project/V4-hal
-          ref: 12496236bd5cfa2cd3c5507f2aa88290a66d2f84
+          ref: 01fa2b3acf2b24fb9cf898b0916e3719871dbe3f
           path: V4-hal
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: V4-project/V4-link
           ref: d155eefabda98ca6716cbe0f81dd8e602d41c990
@@ -52,7 +52,7 @@ jobs:
           if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
             echo "ref=$BASE" >> "$GITHUB_OUTPUT"
           fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         if: steps.baseline.outputs.ref != ''
         with:
           ref: ${{ steps.baseline.outputs.ref }}
@@ -82,7 +82,7 @@ jobs:
             python3 runtime/tools/size/size_report.py build --experiment "$profile" \
               --output "$RUNNER_TEMP/size-experiment-$profile"
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: esp32c6-size

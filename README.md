@@ -58,7 +58,7 @@ the same commits in sibling repositories when reproducing the Docker build:
 | Dependency | Commit |
 |---|---|
 | V4-engine | `a7eb42611170091c72b7a17799b57c13f62fa6d1` |
-| V4-hal | `12496236bd5cfa2cd3c5507f2aa88290a66d2f84` (0.2.1) |
+| V4-hal | `01fa2b3acf2b24fb9cf898b0916e3719871dbe3f` (0.2.2) |
 | V4-link | `d155eefabda98ca6716cbe0f81dd8e602d41c990` |
 
 V4-std is not compiled by the current ESP32-C6 component. Task support and standard
