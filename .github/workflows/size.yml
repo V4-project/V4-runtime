@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: V4-project/V4-hal
-          ref: d36a55ac4782eed526c03afde9236c53f5bc84fa
+          ref: 12496236bd5cfa2cd3c5507f2aa88290a66d2f84
           path: V4-hal
       - uses: actions/checkout@v4
         with:

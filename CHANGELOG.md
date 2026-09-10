@@ -7,8 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Development version: 0.5.0. Changes are accumulated here without bumping the
-version for each commit; the release version and date will be finalized together.
+## [0.5.0] - 2026-09-10
 
 ### Added
 - `diagnostic-logs` measurement restores dynamic/tag logging and INFO traffic traces explicitly; CI can report changed configurations without calculating an invalid same-configuration delta.
@@ -25,6 +24,8 @@ version for each commit; the release version and date will be finalized together
 - Adopt quiet-logs for new builds: static log levels, no per-tag runtime level changes, and DEBUG-only traffic tracing. Startup INFO, ERROR, task support, standard panic output, SDK, optimization and wireless coexistence settings are retained. Existing sdkconfig/CMake caches require explicit migration; diagnostic settings remain available. Hardware validation remains pending.
 
 ### Fixed
+- Pin firmware and size CI to V4-hal 0.2.1 (`1249623`), including the ESP-IDF
+  UART configuration initializer warning fix.
 - Correct native sibling dependency paths and share deterministic dependency
   resolution across engine/HAL/link, with explicit CMake/environment overrides
   and actionable errors for invalid paths. CI `_deps` takes precedence over
@@ -162,7 +163,9 @@ version for each commit; the release version and date will be finalized together
 - Documentation skeleton
 - MIT + Apache 2.0 dual licensing
 
-[Unreleased]: https://github.com/V4-project/V4-runtime/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/V4-project/V4-runtime/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/V4-project/V4-runtime/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/V4-project/V4-runtime/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/V4-project/V4-runtime/compare/v0.2.0...v0.3.1
 [0.2.0]: https://github.com/V4-project/V4-runtime/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/V4-project/V4-runtime/compare/v0.0.0...v0.1.0
