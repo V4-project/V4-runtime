@@ -19,7 +19,7 @@ The runtime provides:
 
 ### Prerequisites
 
-- ESP-IDF v5.1 or later
+- ESP-IDF v5.5.5 (the version pinned by CI, Docker and the component manifest)
 - ESP32-C6 board (M5Stack NanoC6 recommended)
 
 ### Setup

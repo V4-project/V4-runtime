@@ -6,7 +6,7 @@
 dependencies:
   # ESP-IDF version requirement
   idf:
-    version: ">=5.1.0"
+    version: "==5.5.5"
 
 # Note: Required builtin ESP-IDF components (driver, freertos, esp_system, log)
 # are automatically available and don't need to be declared here.

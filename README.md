@@ -37,9 +37,25 @@ Use the host CLI's `v4 repl --port /dev/ttyACM0` to enter Forth source.
 | [runtime/main/panic_handler.cpp](bsp/esp32c6/runtime/main/panic_handler.cpp) | Panic diagnostics |
 | [boards/nanoc6](bsp/esp32c6/boards/nanoc6/) | Board setup and DDT provider |
 | [hal_esp32](bsp/esp32c6/hal_esp32/) | LED HAL and RGB LED sources |
-| [docker-compose.yml](bsp/esp32c6/docker-compose.yml) | ESP-IDF v5.3 development environment |
+| [docker-compose.yml](bsp/esp32c6/docker-compose.yml) | ESP-IDF v5.5.5 development environment |
 
 The ESP-IDF main component directly includes `task_backend_freertos.cpp`; it does not select CUSTOM.
+
+ESP-IDF is pinned to **5.5.5**. CI builds the following dependency revisions; use
+the same commits in sibling repositories when reproducing the Docker build:
+
+| Dependency | Commit |
+|---|---|
+| V4-engine | `a7eb42611170091c72b7a17799b57c13f62fa6d1` |
+| V4-hal | `d36a55ac4782eed526c03afde9236c53f5bc84fa` |
+| V4-link | `d155eefabda98ca6716cbe0f81dd8e602d41c990` |
+
+V4-std is not compiled by the current ESP32-C6 component. Task support and standard
+engine panic diagnostics remain enabled; this SDK migration does not opt out of them.
+Hardware testing is still pending. Successful compilation is not confirmation of
+boot, USB transport, scheduler or panic/LED behavior on the NanoC6.
+See [ESP-IDF 5.5.5 validation](bsp/esp32c6/IDF-VALIDATION.md) for the SDK comparison,
+known warnings and configuration caveats.
 
 ## Build and device workflow
 

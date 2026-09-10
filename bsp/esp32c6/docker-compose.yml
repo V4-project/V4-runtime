@@ -1,9 +1,9 @@
 # Docker Compose configuration for V4 RTOS ESP32-C6 development
-# Provides ESP-IDF v5.3 development environment
+# Provides ESP-IDF v5.5.5 development environment
 
 services:
   esp-idf:
-    image: espressif/idf:v5.3
+    image: espressif/idf:v5.5.5
     container_name: v4-rtos-esp-idf
     volumes:
       # Mount V4-runtime project directory

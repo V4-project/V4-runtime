@@ -55,26 +55,31 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Clone V4-engine dependency
-      working-directory: bsp/esp32c6/runtime
-      run: git clone --depth 1 https://github.com/V4-project/V4-engine.git _deps/V4-engine
+    - name: Checkout tested V4-engine dependency
+      uses: actions/checkout@v4
+      with:
+        repository: V4-project/V4-engine
+        ref: a7eb42611170091c72b7a17799b57c13f62fa6d1
+        path: bsp/esp32c6/runtime/_deps/V4-engine
 
-    - name: Clone V4-hal dependency
-      working-directory: bsp/esp32c6/runtime
-      run: git clone --depth 1 https://github.com/V4-project/V4-hal.git _deps/V4-hal
+    - name: Checkout tested V4-hal dependency
+      uses: actions/checkout@v4
+      with:
+        repository: V4-project/V4-hal
+        ref: d36a55ac4782eed526c03afde9236c53f5bc84fa
+        path: bsp/esp32c6/runtime/_deps/V4-hal
 
-    - name: Clone V4-link dependency
-      working-directory: bsp/esp32c6/runtime
-      run: git clone --depth 1 https://github.com/V4-project/V4-link.git _deps/V4-link
-
-    - name: Clone V4-std dependency
-      working-directory: bsp/esp32c6/runtime
-      run: git clone --depth 1 https://github.com/V4-project/V4-std.git _deps/V4-std
+    - name: Checkout tested V4-link dependency
+      uses: actions/checkout@v4
+      with:
+        repository: V4-project/V4-link
+        ref: d155eefabda98ca6716cbe0f81dd8e602d41c990
+        path: bsp/esp32c6/runtime/_deps/V4-link
 
     - name: Build with ESP-IDF
       uses: espressif/esp-idf-ci-action@v1
       with:
-        esp_idf_version: v5.3
+        esp_idf_version: v5.5.5
         target: esp32c6
         path: 'bsp/esp32c6/runtime'
 
@@ -82,5 +87,10 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: esp32c6-${{ matrix.board }}-firmware
-        path: bsp/esp32c6/runtime/build/*.bin
+        path: |
+          bsp/esp32c6/runtime/build/*.bin
+          bsp/esp32c6/runtime/build/*.elf
+          bsp/esp32c6/runtime/build/*.map
+          bsp/esp32c6/runtime/build/project_description.json
+          bsp/esp32c6/runtime/sdkconfig
         retention-days: 7

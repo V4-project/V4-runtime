@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-10
+
+### Changed
+- Standardize the ESP32-C6 SDK on ESP-IDF 5.5.5 across CI, Docker, component requirements and installation instructions.
+- Pin CI's engine (0.18.1, including the ESP32 panic format fix), HAL and link checkouts to tested commits instead of tracking moving branch heads; omit the unused V4-std checkout.
+- Preserve ELF, linker map, generated sdkconfig and project metadata alongside firmware artifacts.
+- Correct the sdkconfig.defaults comment: silent assertions do not enable LTO.
+
+### Validation
+- Clean builds pass with IDF 5.3.0 and 5.5.5 using identical dependency source; the final 0.4.0/5.5.5 build also passes. The application image grows from 135,328 to 139,408 bytes. See [the validation report](bsp/esp32c6/IDF-VALIDATION.md) for remaining warnings and configuration caveats.
+- No hardware testing was performed; boot, USB communication, scheduling and panic/LED behavior remain unverified on a device.
+
 ## [0.3.2] - 2026-09-10
 
 ### Fixed

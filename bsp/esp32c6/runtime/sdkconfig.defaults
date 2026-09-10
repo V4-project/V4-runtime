@@ -66,7 +66,7 @@ CONFIG_LOG_TIMESTAMP_SOURCE_RTOS=y
 # Optimize for size to leave more RAM for V4 VM
 CONFIG_COMPILER_OPTIMIZATION_SIZE=y
 
-# Enable Link Time Optimization for smaller binary size
+# Keep assertions enabled without their diagnostic strings (this does not enable LTO)
 CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_SILENT=y
 CONFIG_COMPILER_OPTIMIZATION_ASSERTION_LEVEL=1
 

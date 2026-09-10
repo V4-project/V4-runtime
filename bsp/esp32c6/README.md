@@ -43,15 +43,14 @@ esp32c6/
 
 ### ESP-IDF Installation
 
-V4 RTOS for ESP32-C6 requires ESP-IDF v5.1 or later:
+V4 RTOS for ESP32-C6 targets ESP-IDF v5.5.5 (matching CI and Docker):
 
 ```bash
 # Install ESP-IDF
 mkdir -p ~/esp
 cd ~/esp
-git clone --recursive https://github.com/espressif/esp-idf.git
+git clone --branch v5.5.5 --recursive https://github.com/espressif/esp-idf.git
 cd esp-idf
-git checkout v5.1.2
 
 # Install for ESP32-C6
 ./install.sh esp32c6
