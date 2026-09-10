@@ -264,6 +264,7 @@ def build(args):
     shutil.copy2(__file__, output / "harness.py")
     command = ["docker", "run", "--rm", "--network", "none", "--cpus", str(args.jobs),
                "--user", str(os.getuid()) + ":" + str(os.getgid()),
+               "-e", "XDG_CACHE_HOME=/tmp/v4-size-cache",
                "-e", "V4_SIZE_JOBS=" + str(args.jobs),
                "-e", "V4_SIZE_PANIC_DIAGNOSTICS=" + args.panic_diagnostics,
                "-e", "V4_SIZE_EXPERIMENT=" + args.experiment]

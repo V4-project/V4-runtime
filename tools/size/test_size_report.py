@@ -220,6 +220,25 @@ class ReporterTests(unittest.TestCase):
             run.assert_not_called()
             self.assertEqual((output / "keep").read_text(), "keep")
 
+    def test_container_cache_is_writable_for_unregistered_runner_uid(self):
+        with tempfile.TemporaryDirectory() as temp:
+            args = type("Args", (), dict(source=Path("/source"), engine=Path("/engine"),
+                                        hal=Path("/hal"), link=Path("/link"),
+                                        output=Path(temp), image=size.IMAGE, jobs=4,
+                                        panic_diagnostics="on", experiment="default"))()
+            with patch.object(size, "run", return_value="sha256:test"), \
+                    patch.object(size, "snapshot", return_value={}), \
+                    patch.object(size.os, "getuid", return_value=1001), \
+                    patch.object(size.os, "getgid", return_value=1001), \
+                    patch.object(size.subprocess, "run") as run, \
+                    contextlib.redirect_stdout(io.StringIO()):
+                size.build(args)
+            command = run.call_args.args[0]
+            self.assertEqual(command[command.index("--user") + 1], "1001:1001")
+            self.assertEqual(command[command.index("--network") + 1], "none")
+            self.assertIn("XDG_CACHE_HOME=/tmp/v4-size-cache", command)
+            self.assertNotIn("--privileged", command)
+
     def test_output_inside_source_rejected_before_docker(self):
         args = type("Args", (), dict(source=Path("/source"), engine=Path("/engine"),
                                     hal=Path("/hal"), link=Path("/link"),

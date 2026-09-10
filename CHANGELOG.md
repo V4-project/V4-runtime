@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-09-10
+
+### Fixed
+- Give isolated size-build containers an explicit disposable `XDG_CACHE_HOME`
+  under `/tmp`. GitHub runner UID 1001 is absent from the SDK image's passwd
+  database; its default cache path resolved to unwritable `/.cache`, causing
+  baseline configuration to fail. Keep the invoking UID/GID, read-only dependency
+  mounts and network isolation; no root execution or host cache is needed.
+
+### Validation
+- 24 size reporter tests and 8 build-path tests pass, along with formatting checks.
+  IDF 5.5.5 configuration succeeds under unregistered UID/GID 1001 with the fixed
+  cache path and networking disabled. Full firmware validation runs in CI.
+
 ## [0.5.0] - 2026-09-10
 
 ### Added
@@ -163,7 +177,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation skeleton
 - MIT + Apache 2.0 dual licensing
 
-[Unreleased]: https://github.com/V4-project/V4-runtime/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/V4-project/V4-runtime/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/V4-project/V4-runtime/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/V4-project/V4-runtime/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/V4-project/V4-runtime/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/V4-project/V4-runtime/compare/v0.2.0...v0.3.1
