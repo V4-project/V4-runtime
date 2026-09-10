@@ -11,6 +11,7 @@ Development version: 0.5.0. Changes are accumulated here without bumping the
 version for each commit; the release version and date will be finalized together.
 
 ### Added
+- Opt-in `quiet-logs` measurement combines static log levels with DEBUG-only transport tracing, while leaving wireless coexistence and standard panic diagnostics at their defaults. Manual size CI also retains this combined profile.
 - Independent opt-in size experiments for static logging, DEBUG-only transport tracing and disabled wireless coexistence; effective sdkconfig/compiler checks and optional manual CI artifacts. Default runtime settings remain unchanged.
 - `V4_LINK_VERBOSE_LOGS=OFF` moves only per-transfer INFO/hex tracing to DEBUG; startup and error logs are retained.
 - Opt-in `V4_PANIC_DIAGNOSTICS=OFF` for ESP32-C6's direct-source engine build. Standard engine printing is omitted; runtime's ESP_LOG/LED callback, snapshots and link error handling remain unchanged. Default is ON.
@@ -26,6 +27,7 @@ version for each commit; the release version and date will be finalized together
 - Preserve arguments of `-u`, `-Xlinker`, entry-point and related linker options in size comparison identity, including response files. Missing required option arguments now fail instead of disappearing from the comparison.
 
 ### Validation
+- Same-source default/quiet-logs clean builds pass: combined logging changes reduce application BIN by 1,840 B (139,408 to 137,568), static data+BSS by 304 B and DIRAM use by 820 B. Bootloader is unchanged. Coexistence, standard panic output and runtime callback/startup/error diagnostics remain linked; 20 reporter tests and formatting checks pass. This remains opt-in, without hardware testing or adoption as default.
 - Four same-source clean IDF 5.5.5 builds pass: default app 139,408 B; static logs 138,176 B (-1,232), quiet transport 138,800 B (-608), no coexistence 136,960 B (-2,448). Static data+BSS savings are 280/16/392 B respectively; all bootloaders remain 20,576 B. These are separate, non-additive, opt-in feature tradeoffs, not new defaults.
 - 19 reporter tests, formatting checks and 3 existing host link tests pass. All three cross-profile comparisons correctly reject incompatible configurations. Hardware and combined-profile validation remain pending.
 - Panic ON/OFF clean builds under IDF 5.5.5 pass; application BIN shrinks by 448 B (139,408 to 138,960), while bootloader, DIRAM data/BSS/use remain unchanged. The map-based image estimate decreases by 680 B; this is distinct from BIN size. Runtime callback symbols/log strings remain in the OFF ELF.

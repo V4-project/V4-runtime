@@ -12,7 +12,7 @@ on:
         default: '26ccaaa2867e500110750ea785538556ccfbed45'
         required: true
       experiments:
-        description: Also measure static logs, quiet transport and no coexistence
+        description: Also measure individual and combined logging profiles and no coexistence
         type: boolean
         default: false
 
@@ -22,7 +22,7 @@ permissions:
 jobs:
   size:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -75,10 +75,10 @@ jobs:
         run: echo 'No baseline; current measurement only. See report artifact.' >> "$GITHUB_STEP_SUMMARY"
       - name: Build without standard panic diagnostics
         run: python3 runtime/tools/size/size_report.py build --panic-diagnostics off --output "$RUNNER_TEMP/size-no-panic"
-      - name: Measure independent configuration experiments
+      - name: Measure configuration experiments
         if: inputs.experiments == true
         run: |
-          for profile in static-logs quiet-transport no-coex; do
+          for profile in static-logs quiet-transport quiet-logs no-coex; do
             python3 runtime/tools/size/size_report.py build --experiment "$profile" \
               --output "$RUNNER_TEMP/size-experiment-$profile"
           done

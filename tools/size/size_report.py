@@ -22,8 +22,11 @@ EXPERIMENTS = {
     "static-logs": {"CONFIG_LOG_TAG_LEVEL_IMPL_NONE": "y",
                     "CONFIG_LOG_DYNAMIC_LEVEL_CONTROL": "n"},
     "quiet-transport": {},
+    "quiet-logs": {"CONFIG_LOG_TAG_LEVEL_IMPL_NONE": "y",
+                   "CONFIG_LOG_DYNAMIC_LEVEL_CONTROL": "n"},
     "no-coex": {"CONFIG_ESP_COEX_SW_COEXIST_ENABLE": "n"},
 }
+QUIET_TRANSPORT_EXPERIMENTS = ("quiet-transport", "quiet-logs")
 
 
 def run(args, cwd=None):
@@ -154,7 +157,7 @@ def collect():
             raise ValueError("experiment overlay path already exists")
         overlay.write_text("".join(k + "=" + v + "\n" for k, v in expected.items()))
         configure += ["-DSDKCONFIG_DEFAULTS=sdkconfig.defaults;size-sdkconfig.defaults"]
-    if experiment == "quiet-transport":
+    if experiment in QUIET_TRANSPORT_EXPERIMENTS:
         configure += ["-DV4_LINK_VERBOSE_LOGS=OFF"]
     subprocess.run(configure + ["reconfigure"], check=True)
     verify_sdkconfig((project / "sdkconfig").read_text(), expected)
@@ -171,7 +174,7 @@ def collect():
     macros = run(panic_preprocessor_command(panic_commands[0]))
     verify_panic_macros(macros, panic)
     (output / "panic-macros.txt").write_text(macros + "\n")
-    if experiment == "quiet-transport":
+    if experiment in QUIET_TRANSPORT_EXPERIMENTS:
         transport = [c["command"] for c in commands if c["file"].endswith("/main/v4_link_port.cpp")]
         if len(transport) != 1:
             raise ValueError("could not identify runtime transport compilation")

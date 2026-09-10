@@ -167,6 +167,16 @@ class ReporterTests(unittest.TestCase):
             size.snapshot(source, root / "deleted")
             self.assertFalse((root / "deleted/code").exists())
 
+    def test_quiet_logs_combines_only_logging_options(self):
+        self.assertEqual(size.EXPERIMENTS["quiet-logs"], size.EXPERIMENTS["static-logs"])
+        self.assertNotIn("CONFIG_ESP_COEX_SW_COEXIST_ENABLE", size.EXPERIMENTS["quiet-logs"])
+        self.assertEqual(set(size.QUIET_TRANSPORT_EXPERIMENTS), {"quiet-transport", "quiet-logs"})
+        before, after = self.report(), self.report()
+        before["configuration"]["experiment"] = "static-logs"
+        after["configuration"]["experiment"] = "quiet-logs"
+        with self.assertRaisesRegex(ValueError, "experiment"):
+            self.compare(before, after)
+
     def test_existing_output_rejected_before_docker(self):
         with tempfile.TemporaryDirectory() as temp:
             output = Path(temp)

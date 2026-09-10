@@ -137,13 +137,14 @@ diagnostics; baseline/current ON reports pass strict comparison with zero growth
 
 ## Independent configuration experiments
 
-Use the same source and default panic setting for each run; these experiments
-are mutually exclusive and do not combine optimizations:
+Use the same source and default panic setting for each run. Select one named
+profile per build; only `quiet-logs` combines the two logging changes:
 
 ```sh
 python3 tools/size/size_report.py build --experiment default --output /tmp/v4-config-default
 python3 tools/size/size_report.py build --experiment static-logs --output /tmp/v4-config-static-logs
 python3 tools/size/size_report.py build --experiment quiet-transport --output /tmp/v4-config-quiet-transport
+python3 tools/size/size_report.py build --experiment quiet-logs --output /tmp/v4-config-quiet-logs
 python3 tools/size/size_report.py build --experiment no-coex --output /tmp/v4-config-no-coex
 ```
 
@@ -158,6 +159,12 @@ python3 tools/size/size_report.py build --experiment no-coex --output /tmp/v4-co
   recommendation for future Wi-Fi/BLE/802.15.4 applications. It does not force the
   hidden Wi-Fi enable symbol off or promise radio/power correctness on hardware.
 
+- `quiet-logs`: combines the static-logs SDK overlay and `V4_LINK_VERBOSE_LOGS=OFF`.
+  It does not disable wireless coexistence or standard panic output. Both the SDK
+  settings and transport compiler macro are checked. Per-tag/runtime log adjustment
+  is lost, while ERROR and startup INFO messages remain; transfer tracing requires
+  a build whose maximum log level permits DEBUG.
+
 The overlays are created only inside the isolated source copy; tracked defaults
 and developer settings are untouched. Generated sdkconfig values are checked after
 configuration. Quiet transport additionally checks its compiler macro. Profiles
@@ -165,8 +172,8 @@ are recorded and normal `compare` rejects different experiments. Retain separate
 reports and describe their deltas as feature tradeoffs. Setting changes can affect
 multiple SDK components, so inspect generated sdkconfig diffs as well as metrics.
 
-Firmware Size's manual `experiments` input builds all three candidates; normal
-push/PR CI does not add these three builds. These profiles do not change defaults
+Firmware Size's manual `experiments` input builds all candidate profiles; normal
+push/PR CI does not add these experiment builds. These profiles do not change defaults
 for normal firmware builds. For native builds, the quiet transport option is
 `idf.py -DV4_LINK_VERBOSE_LOGS=OFF reconfigure`; restore it with ON in a cached build.
 
@@ -189,8 +196,9 @@ changes only the feature described above and its SDK-derived configuration.
 
 Bootloader BIN remains 20,576 B in all four. Static data+BSS decrease by 280 B,
 16 B and 392 B respectively. DIRAM reductions also include code and must not be
-presented as runtime free-heap measurements. Savings are **not additive**: combined
-profiles have not been built, and shared code/alignment can change their result.
+presented as runtime free-heap measurements. Savings are **not generally additive**:
+shared code/alignment can change the combined result. This initial table measures
+each feature separately.
 
 The static-logs ELF no longer contains `s_log_cache`; no-coex removes `coex_pre_init`
 and the coexistence init hook. Quiet transport removes INFO traffic strings at the
@@ -201,7 +209,35 @@ All three cross-profile `compare` attempts correctly fail with exit code 2.
 
 Reporter tests pass (19), formatting checks pass, and existing host link tests
 pass (3). None of these checks execute firmware on hardware. Candidates remain
-opt-in; neither their combination nor adoption as default is validated here.
+opt-in; this initial validation did not test their combination or adopt new defaults.
+
+### Combined logging result (2026-09-10)
+
+Default and `quiet-logs` were subsequently rebuilt from identical tracked sources
+using the same updated harness, SDK and dependencies. Standard panic diagnostics
+remain ON; wireless coexistence remains enabled. The effective sdkconfig changes
+only log tag/dynamic-level settings, and the transport macro is verified as zero.
+
+| Metric (bytes) | Default | quiet-logs | Delta |
+|---|---:|---:|---:|
+| Application BIN | 139,408 | 137,568 | -1,840 |
+| Static data | 3,956 | 3,932 | -24 |
+| BSS | 20,352 | 20,072 | -280 |
+| DIRAM use | 65,394 | 64,574 | -820 |
+| Bootloader BIN | 20,576 | 20,576 | 0 |
+
+Static data+BSS save 304 B; DIRAM also includes code. In this case the BIN saving
+equals the sum of earlier individual BIN savings, but static data+BSS save 8 B
+more than their individual sum. Measure combinations rather than assuming sums.
+The map image estimate drops by 2,538 B, which is not the BIN saving.
+
+ELF inspection confirms removal of the log cache and INFO transfer strings while
+retaining `coex_pre_init`, the standard panic banner, runtime panic callback,
+startup INFO and error messages. Runtime log level/tag adjustment is unavailable,
+and binary transport is still not guaranteed free of other logs. Cross-profile
+comparison is rejected as expected. Twenty reporter tests and formatting checks
+pass. Hardware behavior and adoption as default remain unvalidated; no normal
+firmware defaults were changed.
 
 ```sh
 python3 -m unittest discover -s tools/size -v
