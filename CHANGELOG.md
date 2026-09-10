@@ -11,14 +11,19 @@ Development version: 0.5.0. Changes are accumulated here without bumping the
 version for each commit; the release version and date will be finalized together.
 
 ### Added
+- Opt-in `V4_PANIC_DIAGNOSTICS=OFF` for ESP32-C6's direct-source engine build. Standard engine printing is omitted; runtime's ESP_LOG/LED callback, snapshots and link error handling remain unchanged. Default is ON.
+- Size builds accept `--panic-diagnostics on|off`, verify the effective engine preprocessor macro, and retain an additional OFF artifact in CI. Cross-configuration comparisons remain rejected.
 - Isolated ESP32-C6 Docker size builds from tracked working-tree snapshots, without hardware, developer configs or container network access.
 - JSON firmware/IDF memory reports, retained ELF/map/configuration/command evidence, strict same-configuration comparison and optional application-image growth budgets.
 - Firmware Size CI base/current comparisons using the current harness and pinned dependencies, reporter tests and 30-day artifacts; `make size-build` entry point.
 
 ### Compatibility
-- Measurement tooling only: no task, panic-output, SDK or optimization setting changes. Hardware validation remains pending.
+- Defaults remain unchanged: tasks and standard panic output are ON, with the same SDK and optimization settings. Panic output can now be disabled explicitly. Hardware validation remains pending.
 
 ### Validation
+- Panic ON/OFF clean builds under IDF 5.5.5 pass; application BIN shrinks by 448 B (139,408 to 138,960), while bootloader, DIRAM data/BSS/use remain unchanged. The map-based image estimate decreases by 680 B; this is distinct from BIN size. Runtime callback symbols/log strings remain in the OFF ELF.
+- Engine host tests pass in both modes (14 each); link tests pass with diagnostics OFF (3), including VM_ERROR after a returning panic callback. Reporter tests pass (14). Hardware panic recovery has not been tested.
+- The current harness also builds the old 0.4.0 runtime with inherited ON diagnostics; strict baseline/current ON comparison passes with zero size growth.
 - Two clean IDF 5.5.5 builds (0.4.0 baseline and 0.5.0 working tree) pass with the same harness and dependencies; strict comparison passes with a zero-byte growth budget. Application 139,408 B, bootloader 20,576 B and IDF DIRAM use 65,394 B are unchanged.
 - 12 reporter tests and formatting checks pass locally. The new GitHub workflow has not yet been run remotely.
 

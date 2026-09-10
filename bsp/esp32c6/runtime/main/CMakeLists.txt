@@ -144,6 +144,13 @@ idf_component_register(
 # Compiler Options
 # ==============================================================================
 
+# Keep the engine's default diagnostics unless explicitly disabled. The runtime's
+# ESP_LOG/LED callback and V4-link error response are independent of this formatter.
+option(V4_PANIC_DIAGNOSTICS "Include engine standard panic output" ON)
+if(NOT V4_PANIC_DIAGNOSTICS)
+  target_compile_definitions(${COMPONENT_LIB} PRIVATE V4_PANIC_DIAGNOSTICS=0)
+endif()
+
 # C++17 required for V4 and V4-hal
 target_compile_features(${COMPONENT_LIB} PUBLIC cxx_std_17)
 

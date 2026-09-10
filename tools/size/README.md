@@ -35,7 +35,8 @@ or overwritten. Existing nonempty outputs are rejected, never cleaned automatica
 
 This profile uses tracked `runtime/sdkconfig.defaults`, not the optional board
 sdkconfig. It builds the current NanoC6 runtime for ESP32-C6; it does not flash or
-validate board behavior. Task and panic-output settings are not changed by the tool.
+validate board behavior. Task settings are not changed. Standard engine panic
+diagnostics default to ON; an explicit OFF measurement is described below.
 Dependencies are read-only in the container; build/results are isolated writable
 copies. Failed builds keep their log and partial output for diagnosis.
 
@@ -79,6 +80,60 @@ same pinned dependencies. Pull requests use their base SHA, pushes use the previ
 SHA, and manual runs take a baseline ref. It publishes a Markdown job summary and
 retains reports, logs and firmware artifacts for 30 days. Growth is report-only;
 incompatible configurations fail visibly rather than producing a misleading delta.
+CI also retains a current OFF build as a separate configuration artifact.
+
+## Standard panic-output opt-out
+
+```sh
+python3 tools/size/size_report.py build --panic-diagnostics on --output /tmp/v4-panic-on
+python3 tools/size/size_report.py build --panic-diagnostics off --output /tmp/v4-panic-off
+```
+
+Both use the same runtime/dependencies/SDK. The tool preprocesses engine `panic.cpp`
+with its actual compile command and verifies the requested macro is 1 or 0;
+`panic-macros.txt` is retained. An older runtime that ignores OFF is rejected.
+The effective feature is recorded in configuration identity. `compare` intentionally
+rejects ON vs OFF: this is a diagnostic-feature tradeoff, not a same-configuration
+code regression. Inspect the two metric sets and archive/map reports separately.
+For subsequent code changes, compare OFF vs OFF (or ON vs ON) with the same harness.
+
+For a native IDF build, from `bsp/esp32c6/runtime`:
+
+```sh
+idf.py -DV4_PANIC_DIAGNOSTICS=OFF reconfigure
+idf.py build
+# Restore default output explicitly in this cached build:
+idf.py -DV4_PANIC_DIAGNOSTICS=ON reconfigure
+```
+
+This removes only engine's standard printf formatter, including its return-stack
+call-trace printing. Snapshots and the custom callback remain, so runtime's own
+ESP_LOG diagnostics and LED indication are still compiled. It does not disable
+ESP-IDF panic handling, assertions, VM boundary checks or V4-link VM_ERROR replies.
+No promise of target panic recovery is made without hardware testing.
+
+Measured on 2026-09-10 with identical runtime working-tree snapshots, pinned
+engine/HAL/link and IDF 5.5.5 image. Only the panic option and its effective
+compiler definitions differ; sdkconfig and partition table match.
+
+| Metric (bytes) | ON | OFF | Delta |
+|---|---:|---:|---:|
+| Application BIN | 139,408 | 138,960 | -448 |
+| Bootloader BIN | 20,576 | 20,576 | 0 |
+| DIRAM use | 65,394 | 65,394 | 0 |
+| DIRAM data / BSS | 3,956 / 20,352 | 3,956 / 20,352 | 0 / 0 |
+| Flash code | 73,800 | 73,344 | -456 |
+| Flash rodata | 16,796 | 16,572 | -224 |
+| IDF map image estimate | 136,134 | 135,454 | -680 |
+
+Map estimates and BIN lengths differ due to image layout/padding; do not describe
+the 680 B map reduction as the BIN saving. OFF's ELF retains `handle_panic`,
+`panic_handler_init`, `vm_panic`, `vm_set_panic_handler`, and the runtime's error
+log strings; engine's standard panic banner is absent. Engine host CTest passes
+14/14 in each mode, and link CTest passes 3/3 with diagnostics OFF, including error
+response after callback return. These checks do not execute ESP32 firmware.
+The same harness also clean-builds the old 0.4.0 runtime with inherited ON
+diagnostics; baseline/current ON reports pass strict comparison with zero growth.
 
 ```sh
 python3 -m unittest discover -s tools/size -v

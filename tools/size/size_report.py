@@ -97,12 +97,32 @@ def option_profiles(commands, responses=None):
     return sorted(profiles)
 
 
+def panic_preprocessor_command(command):
+    tokens = iter(shlex.split(command))
+    result = []
+    for token in tokens:
+        if token == "-o":
+            next(tokens)
+        elif token != "-c":
+            result.append(token)
+    return result + ["-dM", "-E"]
+
+
+def verify_panic_macros(macros, requested):
+    definitions = [line.split(maxsplit=2)[-1] for line in macros.splitlines()
+                   if line.startswith("#define V4_PANIC_DIAGNOSTICS ")]
+    if definitions != ["1" if requested == "on" else "0"]:
+        raise ValueError("requested panic diagnostics did not reach the engine compiler")
+
+
 def collect():
     """Internal command, executed only in the controlled build container."""
     project = Path("/project") / PROJECT
     build = project / "build"
     os.chdir(project)
-    subprocess.run(["idf.py", "-B", "build", "reconfigure"], check=True)
+    panic = os.environ["V4_SIZE_PANIC_DIAGNOSTICS"]
+    subprocess.run(["idf.py", "-B", "build", "-DV4_PANIC_DIAGNOSTICS=" + panic.upper(),
+                    "reconfigure"], check=True)
     subprocess.run(["ninja", "-C", "build", "-j", os.environ["V4_SIZE_JOBS"]], check=True)
     subprocess.run(["idf.py", "-B", "build", "size"], check=True)
     output = Path("/results")
@@ -110,6 +130,12 @@ def collect():
         subprocess.run([sys.executable, "-m", "esp_idf_size", "--format", "json",
                         *flags, "-o", str(output / name), str(build / "v4-runtime.map")], check=True)
     commands = json.loads((build / "compile_commands.json").read_text())
+    panic_commands = [c["command"] for c in commands if c["file"] == "/v4-engine/src/panic.cpp"]
+    if len(panic_commands) != 1:
+        raise ValueError("could not identify engine panic compilation")
+    macros = run(panic_preprocessor_command(panic_commands[0]))
+    verify_panic_macros(macros, panic)
+    (output / "panic-macros.txt").write_text(macros + "\n")
     ninja_commands = run(["ninja", "-C", "build", "-t", "commands"])
     (output / "build-commands.txt").write_text(ninja_commands + "\n")
     link_commands = [c for c in ninja_commands.splitlines() if " -o v4-runtime.elf " in c]
@@ -129,6 +155,7 @@ def collect():
     responses = {}
     config = {"image_id": metadata["image_id"], "harness_sha256": sha(__file__),
               "target": "esp32c6", "profile": "tracked-runtime-defaults",
+              "panic_diagnostics": panic,
               "sdk": run(["idf.py", "--version"]),
               "compiler": run(["riscv32-esp-elf-gcc", "--version"]),
               "size_tool": run([sys.executable, "-c",
@@ -177,7 +204,8 @@ def build(args):
     shutil.copy2(__file__, output / "harness.py")
     command = ["docker", "run", "--rm", "--network", "none", "--cpus", str(args.jobs),
                "--user", str(os.getuid()) + ":" + str(os.getgid()),
-               "-e", "V4_SIZE_JOBS=" + str(args.jobs)]
+               "-e", "V4_SIZE_JOBS=" + str(args.jobs),
+               "-e", "V4_SIZE_PANIC_DIAGNOSTICS=" + args.panic_diagnostics]
     mounts = [(output / "sources/runtime", "/project", False),
               (results, "/results", False), (output / "harness.py", "/harness.py", True)]
     mounts += [(output / "sources" / name, "/v4-" + name, True)
@@ -223,6 +251,7 @@ def main():
         p.add_argument("--" + name, type=Path, default=ROOT.parent / ("V4-" + name))
     p.add_argument("--image", default=IMAGE)
     p.add_argument("--jobs", type=int, default=4)
+    p.add_argument("--panic-diagnostics", choices=("on", "off"), default="on")
     p.add_argument("--output", type=Path, required=True)
     p = sub.add_parser("compare")
     p.add_argument("before", type=Path)

@@ -69,6 +69,8 @@ jobs:
       - name: No baseline
         if: steps.baseline.outputs.ref == ''
         run: echo 'No baseline; current measurement only. See report artifact.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Build without standard panic diagnostics
+        run: python3 runtime/tools/size/size_report.py build --panic-diagnostics off --output "$RUNNER_TEMP/size-no-panic"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

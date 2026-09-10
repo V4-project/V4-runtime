@@ -56,6 +56,9 @@ the same commits in sibling repositories when reproducing the Docker build:
 
 V4-std is not compiled by the current ESP32-C6 component. Task support and standard
 engine panic diagnostics remain enabled; this SDK migration does not opt out of them.
+The default remains ON, but `idf.py -DV4_PANIC_DIAGNOSTICS=OFF reconfigure` can now
+omit engine's standard formatter while retaining the runtime ESP_LOG/LED callback.
+See [size tooling](tools/size/README.md#standard-panic-output-opt-out) for isolated ON/OFF measurements.
 Hardware testing is still pending. Successful compilation is not confirmation of
 boot, USB transport, scheduler or panic/LED behavior on the NanoC6.
 See [ESP-IDF 5.5.5 validation](bsp/esp32c6/IDF-VALIDATION.md) for the SDK comparison,

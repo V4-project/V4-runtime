@@ -43,7 +43,8 @@ class ReporterTests(unittest.TestCase):
 
     def test_configuration_mismatch(self):
         for key in ("sdk", "dependencies", "image_id", "sdkconfig_sha256",
-                    "partition_sha256", "harness_sha256", "compile_options", "link_options"):
+                    "partition_sha256", "harness_sha256", "compile_options", "link_options",
+                    "panic_diagnostics"):
             after = self.report()
             after["configuration"][key] = "changed"
             with self.subTest(key=key), self.assertRaisesRegex(ValueError, "incompatible"):
@@ -84,6 +85,18 @@ class ReporterTests(unittest.TestCase):
             response.write_text('@"' + str(response) + '"')
             with self.assertRaisesRegex(ValueError, "recursive"):
                 size.option_profiles(['cc @"' + str(response) + '"'])
+
+    def test_panic_preprocessor_command(self):
+        self.assertEqual(size.panic_preprocessor_command('cc -Os -o out.obj -c "/src/panic.cpp"'),
+                         ["cc", "-Os", "/src/panic.cpp", "-dM", "-E"])
+
+    def test_panic_compiler_verification(self):
+        size.verify_panic_macros("#define V4_PANIC_DIAGNOSTICS 1\n", "on")
+        size.verify_panic_macros("#define V4_PANIC_DIAGNOSTICS 0\n", "off")
+        for macros, requested in (("", "off"), ("#define V4_PANIC_DIAGNOSTICS 1", "off"),
+                                  ("#define V4_PANIC_DIAGNOSTICS 0", "on")):
+            with self.subTest(macros=macros), self.assertRaisesRegex(ValueError, "compiler"):
+                size.verify_panic_macros(macros, requested)
 
     def test_snapshot_tracks_edits_but_not_untracked_files(self):
         with tempfile.TemporaryDirectory() as temp:
